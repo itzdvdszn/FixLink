@@ -1,0 +1,13 @@
+{
+  "name": "FixLink — Every Service. One Platform.",
+  "short_name": "FixLink",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#062b5c",
+  "description": "Connect customers with trusted local service professionals.",
+  "icons": [
+    {"src":"assets/fixlink-logo.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"assets/fixlink-logo.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
+}
