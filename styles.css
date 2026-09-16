@@ -1805,3 +1805,8 @@ textarea{
 .topbar .profile{
   display:none !important;
 }
+/* FIXLINK LOADING SCREEN - BLUE BACKGROUND */
+#loading-screen,
+.loading-screen {
+  background: #0877e8 !important;
+}
