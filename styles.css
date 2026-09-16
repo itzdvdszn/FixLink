@@ -1810,3 +1810,16 @@ textarea{
 .loading-screen {
   background: #0877e8 !important;
 }
+/* BLUE FIXLINK LOADING SCREEN */
+#fixlink-loader {
+  background: #0877e8 !important;
+}
+
+#fixlink-loader .fixlink-loader-content h1,
+#fixlink-loader .fixlink-loader-content p {
+  color: #ffffff !important;
+}
+
+#fixlink-loader .fixlink-loading-dots span {
+  background: #ffffff !important;
+}
