@@ -1546,7 +1546,7 @@ textarea{
 
 .fixlink-loading-dots span{
   width:20px;
-  height:15px;
+  height:20px;
   border-radius:50%;
   background:#0877e1;
   animation:fixlinkDot 1.2s infinite ease-in-out;
