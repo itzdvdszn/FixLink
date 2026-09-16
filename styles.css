@@ -495,4 +495,98 @@
 .user-profile,
 .topbar .profile {
   display: none !important;
+}/* =========================================
+   FIXLINK LOADING SCREEN
+   ========================================= */
+
+#fixlink-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#fixlink-loader.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fixlink-loader-content {
+  text-align: center;
+  animation: fixlinkLoaderAppear 0.8s ease forwards;
+}
+
+.fixlink-loader-logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.fixlink-loader-content h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  color: #062b5c;
+  letter-spacing: -0.5px;
+}
+
+.fixlink-loader-content p {
+  margin: 6px 0 22px;
+  font-size: 14px;
+  color: #666;
+}
+
+.fixlink-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+.fixlink-loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0877e1;
+  animation: fixlinkDot 1.2s infinite ease-in-out;
+}
+
+.fixlink-loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.fixlink-loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fixlinkLoaderAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fixlinkDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
 }
