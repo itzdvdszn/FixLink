@@ -1517,8 +1517,8 @@ textarea{
 }
 
 .fixlink-loader-logo{
-  width:90px;
-  height:90px;
+  width:260px;
+  height:220px;
   object-fit:contain;
   display:block;
   margin:0 auto 12px;
@@ -1545,8 +1545,8 @@ textarea{
 }
 
 .fixlink-loading-dots span{
-  width:8px;
-  height:8px;
+  width:20px;
+  height:15px;
   border-radius:50%;
   background:#0877e1;
   animation:fixlinkDot 1.2s infinite ease-in-out;
