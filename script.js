@@ -55,7 +55,26 @@ $("openPremium").onclick=()=>showModal(premiumModal);$("accountPremium").onclick
 $("messageForm").addEventListener("submit",e=>{e.preventDefault();const input=$("messageInput");const message=input.value.trim();if(!message)return;$("chatLog").insertAdjacentHTML("beforeend",`<div class="chat-bubble sent">${message}<small>Just now</small></div>`);input.value="";$("chatLog").scrollTop=$("chatLog").scrollHeight;setTimeout(()=>{$("chatLog").insertAdjacentHTML("beforeend",`<div class="chat-bubble received">Thanks for reaching out. I can help with that. Please share your preferred time and area.<small>Just now</small></div>`);$("chatLog").scrollTop=$("chatLog").scrollHeight},650)});
 function updateAccountCopy(){const professional=accountRole==="professional";$("accountTitle").textContent=professional?"Welcome back, professional":"Welcome back";$("accountSubtitle").textContent=professional?"Sign in to manage your profile, requests and Premium Visibility.":"Sign in as a customer to message professionals and manage your requests.";$("professionalAccountActions").hidden=!professional}
 function openAccount(role="customer"){accountRole=role;document.querySelectorAll(".auth-tab").forEach(t=>t.classList.toggle("active",t.dataset.role===role));updateAccountCopy();showModal(accountModal)}
-$("profileBtn").onclick=()=>openAccount("customer");$("accountBtn").onclick=()=>openAccount("customer");$("createAccountBtn").onclick=()=>openCustomer();$("fixlink-home-brand").onclick=()=>{if(location.pathname.endsWith("index.html"))return;};
+if ($("profileBtn")) {
+  $("profileBtn").onclick = () => openAccount("customer");
+}
+
+if ($("accountBtn")) {
+  $("accountBtn").onclick = () => openAccount("customer");
+}
+
+if ($("createAccountBtn")) {
+  $("createAccountBtn").onclick = () => openCustomer();
+}
+
+if ($("fixlink-home-brand")) {
+  $("fixlink-home-brand").onclick = () => {
+    if (location.pathname.endsWith("index.html") || location.pathname.endsWith("/")) {
+      return;
+    }
+    window.location.href = "index.html";
+  };
+}
 document.querySelectorAll(".auth-tab").forEach(t=>t.onclick=()=>{accountRole=t.dataset.role;document.querySelectorAll(".auth-tab").forEach(x=>x.classList.toggle("active",x===t));updateAccountCopy()});
 $("accountForm").addEventListener("submit",e=>{e.preventDefault();if(!e.currentTarget.checkValidity()){e.currentTarget.reportValidity();return}localStorage.setItem(ACCOUNT_KEY,JSON.stringify({role:accountRole,email:new FormData(e.currentTarget).get("email")}));msg(`${accountRole[0].toUpperCase()+accountRole.slice(1)} demo sign-in successful.`);e.currentTarget.reset();closeModal(accountModal)});
 $("viewPros").onclick=()=>pg.scrollIntoView({behavior:"smooth"});$("viewServices").onclick=()=>sg.scrollIntoView({behavior:"smooth"});
