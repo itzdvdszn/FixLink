@@ -23,7 +23,51 @@ function distanceBasedPrice(basePrice,distance){const base=Number(String(basePri
 const fallbackImage="assets/ac-technician.png";
 function renderServices(list=services){sg.innerHTML=list.length?list.map(([name,icon,img])=>`<button class="service-card" data-service="${name}" type="button"><img src="${img}" alt="${name}" loading="lazy"><span class="service-icon">${icon}</span><span class="service-label">${name}</span></button>`).join(""): '<div class="empty-state">No matching service found. Try another search.</div>'}
 function getRenderedPros(){const registered=getPros().map(p=>({...p,rating:"New",jobs:"0",distance:p.city?`${p.city} • nearby demo profile`:"Location not set",experience:`${p.experience||0} years experience`,price:`₦${Number(p.startingPrice||0).toLocaleString()}`,img:p.img||services.find(s=>s[0]===p.trade)?.[2]||services[0][2]}));return [...registered,...demoPros].map(p=>({...p,price:distanceBasedPrice(p.price,p.distance)}))}
-function renderPros(){const all=getRenderedPros();pg.innerHTML=all.map((p,index)=>`<article class="pro-card" data-pro-index="${index}" tabindex="0"><div class="pro-image"><img src="${p.img}" alt="${p.name}" loading="lazy"><span class="verified">✓ Verified</span></div><div class="pro-body"><h3>${p.name}</h3><div class="rating">★ ${p.rating} <span class="meta">(${p.jobs} jobs)</span></div><div class="meta">⌖ ${p.distance}</div><div class="meta">◷ ${p.experience}</div><span class="tag">${p.trade}</span><div class="price">From ${p.price}</div><div class="pro-actions"><button class="secondary message-pro" type="button" data-name="${p.name}" data-trade="${p.trade}" data-phone="${p.phone||""}">Message</button><a class="secondary call-pro" href="${p.phone?`tel:${p.phone}`:"#"}" data-phone="${p.phone||""}">☎ Call</a><button class="primary request-pro" type="button" data-trade="${p.trade}">Request</button></div></div></article>`).join("")}
+function renderPros(filterTrade=""){
+  const all=getRenderedPros();
+  const filtered=filterTrade?all.filter(p=>p.trade===filterTrade):all;
+
+  pg.innerHTML=filtered.length
+    ? filtered.map((p,index)=>`
+      <article class="pro-card" data-pro-index="${index}" tabindex="0">
+        <div class="pro-image">
+          <img src="${p.img}" alt="${p.name}" loading="lazy">
+          <span class="verified">✓ Verified</span>
+        </div>
+
+        <div class="pro-body">
+          <h3>${p.name}</h3>
+          <div class="rating">★ ${p.rating} <span class="meta">(${p.jobs} jobs)</span></div>
+          <div class="meta">⌖ ${p.distance}</div>
+          <div class="meta">◷ ${p.experience}</div>
+          <span class="tag">${p.trade}</span>
+          <div class="price">From ${p.price}</div>
+
+          <div class="pro-actions">
+            <button class="secondary message-pro" type="button"
+              data-name="${p.name}"
+              data-trade="${p.trade}"
+              data-phone="${p.phone||""}">
+              Message
+            </button>
+
+            <a class="secondary call-pro"
+              href="${p.phone?`tel:${p.phone}`:"#"}"
+              data-phone="${p.phone||""}">
+              ☎ Call
+            </a>
+
+            <button class="primary request-pro"
+              type="button"
+              data-trade="${p.trade}">
+              Request
+            </button>
+          </div>
+        </div>
+      </article>
+    `).join("")
+    : `<div class="empty-state">No matching professionals found yet.</div>`;
+}
 const monitoringJobs=[{name:"Musa Plumbing",trade:"Plumbing repair",status:"On the way",progress:72,distance:"0.8 km away",eta:"Arriving in 8 min",img:demoPros[0].img,latitude:6.5244,longitude:3.3792},{name:"Tunde Electric",trade:"Electrical inspection",status:"Heading to you",progress:38,distance:"2.1 km away",eta:"Arriving in 18 min",img:demoPros[2].img,latitude:6.6018,longitude:3.3515}];
 function renderMonitoring(){mg.innerHTML=monitoringJobs.map((job,index)=>`<article class="monitor-card"><div class="monitor-head"><img class="monitor-avatar" src="${job.img}" alt="${job.name}"><div><h3>${job.name}</h3><p>${job.trade}</p></div><span class="monitor-status">${job.status}</span></div><div class="monitor-route"><span>Professional location</span><strong>${job.distance}</strong></div><div class="monitor-progress" aria-label="${job.progress}% of the journey completed"><span style="width:${job.progress}%"></span></div><div class="monitor-meta"><span>Journey progress <strong>${job.progress}%</strong></span><span><strong>${job.eta}</strong></span></div><button class="secondary monitor-action" type="button" data-monitor-index="${index}">View tracking details</button></article>`).join("")}
 document.addEventListener("error",event=>{const image=event.target;if(image instanceof HTMLImageElement&&image.getAttribute("src")!==fallbackImage){image.src=fallbackImage}},true);
@@ -82,6 +126,92 @@ function useLocation(){if(!navigator.geolocation){msg("Location is not supported
 $("locationBtn").onclick=useLocation;$("useLocation").onclick=useLocation;
 $("searchInput").oninput=e=>{const q=e.target.value.toLowerCase().trim();renderServices(q?services.filter(s=>s[0].toLowerCase().includes(q)):services)};
 $("searchInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const q=e.target.value.trim();if(q)msg(`Showing services matching “${q}”.`)}};
-sg.addEventListener("click",e=>{const c=e.target.closest(".service-card");if(c)openJob(c.dataset.service)});pg.addEventListener("click",e=>{const card=e.target.closest(".pro-card"),message=e.target.closest(".message-pro"),request=e.target.closest(".request-pro");if(message)openMessage(message.dataset.name,message.dataset.trade,message.dataset.phone);else if(request)openJob(request.dataset.trade);else if(card)openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])});pg.addEventListener("keydown",e=>{const card=e.target.closest(".pro-card");if(card&&["Enter"," "].includes(e.key)){e.preventDefault();openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])}});
+sg.addEventListener("click",e=>{const c=e.target.closest(".service-card");if(c)openJob(c.dataset.service)});pg.addEventListener("click",e=>{
+  const card=e.target.closest(".pro-card");
+  const message=e.target.closest(".message-pro");
+  const request=e.target.closest(".request-pro");
+
+  if(message){
+    openMessage(
+      message.dataset.name,
+      message.dataset.trade,
+      message.dataset.phone
+    );
+  }
+  else if(request){
+    openJob(request.dataset.trade);
+  }
+  else if(card){
+    const visiblePros=[...pg.querySelectorAll(".pro-card")];
+    const index=visiblePros.indexOf(card);
+    const trade=card.querySelector(".tag")?.textContent.trim();
+
+    const matchingPros=getRenderedPros().filter(
+      p=>p.trade===trade
+    );
+
+    if(matchingPros[index]){
+      openProfessionalDetails(matchingPros[index]);
+    }
+  }
+});
 mg.addEventListener("click",e=>{const button=e.target.closest(".monitor-action");if(button){const job=monitoringJobs[Number(button.dataset.monitorIndex)];msg(`${job.name} is ${job.distance}. ${job.eta}.`)}});
 ["closeModal","closeCustomer","closeJob","closeAccount","closeMessage","closePayment","closePremium","closeAssistant"].forEach(id=>$(id).onclick=closeAll);$("closeProfessional").onclick=()=>closeModal(professionalModal);[proModal,customerModal,jobModal,accountModal,messageModal,professionalModal,paymentModal,premiumModal,assistantModal].forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m)}));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+/* =========================================================
+   FIXLINK ASSISTANT → HOMEPAGE CONNECTION
+   ========================================================= */
+
+function applyAssistantRecommendation(){
+  const recommendedTrade = localStorage.getItem("fixlinkAssistantTrade");
+
+  if(!recommendedTrade) return;
+
+  // Put the recommended trade into the search box
+  const search = $("searchInput");
+  if(search) search.value = recommendedTrade;
+
+  // Show only the recommended service
+  renderServices(
+    services.filter(service => service[0] === recommendedTrade)
+  );
+
+  // Show only matching professionals
+  renderPros(recommendedTrade);
+
+  // Scroll to the services area
+  setTimeout(()=>{
+    const servicesSection = document.querySelector("#services");
+    if(servicesSection){
+      servicesSection.scrollIntoView({
+        behavior:"smooth",
+        block:"start"
+      });
+    }
+  },150);
+
+  msg(`Showing ${recommendedTrade} services and professionals.`);
+
+  // Clear it so a normal homepage visit isn't permanently filtered
+  localStorage.removeItem("fixlinkAssistantTrade");
+}
+
+applyAssistantRecommendation();
+pg.addEventListener("keydown",e=>{
+  const card=e.target.closest(".pro-card");
+
+  if(card&&["Enter"," "].includes(e.key)){
+    e.preventDefault();
+
+    const visiblePros=[...pg.querySelectorAll(".pro-card")];
+    const index=visiblePros.indexOf(card);
+    const trade=card.querySelector(".tag")?.textContent.trim();
+
+    const matchingPros=getRenderedPros().filter(
+      p=>p.trade===trade
+    );
+
+    if(matchingPros[index]){
+      openProfessionalDetails(matchingPros[index]);
+    }
+  }
+});
