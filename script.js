@@ -220,7 +220,7 @@ $("customerForm").addEventListener("submit", async e => {
     if (profileError) {
       console.error("Profile lookup error:", profileError);
       msg("Account created, but profile setup is still processing. Please sign in shortly.");
-      e.currentTarget.reset();
+      form.reset();
       closeModal(customerModal);
       return;
     }
@@ -253,7 +253,7 @@ $("customerForm").addEventListener("submit", async e => {
     );
 
     msg("Account created! Check your email to confirm your account.");
-    e.currentTarget.reset();
+    form.reset();
     closeModal(customerModal);
 
   } catch (error) {
