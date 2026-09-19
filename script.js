@@ -290,15 +290,17 @@ $("fixlink-home-brand")?.addEventListener("click", () => {
 });
 document.querySelectorAll(".auth-tab").forEach(t=>t.onclick=()=>{accountRole=t.dataset.role;document.querySelectorAll(".auth-tab").forEach(x=>x.classList.toggle("active",x===t));updateAccountCopy()});
 $("accountForm").addEventListener("submit", async e => {
+
   e.preventDefault();
-const form.reset();
 
-if (!form.checkValidity()) {
-  form.reportValidity();
-  return;
-}
+  const form = e.currentTarget;
 
-const d = new FormData(form);
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const d = new FormData(form);
   const email = d.get("email").trim();
   const password = d.get("password");
 
@@ -357,13 +359,15 @@ const d = new FormData(form);
     );
 
     form.reset();
-closeModal(customerModal);
+    closeModal(accountModal);
 
   } catch (error) {
     console.error("Sign-in error:", error);
     msg("Something went wrong. Please try again.");
   }
+
 });
+
 $("viewPros").onclick=()=>pg.scrollIntoView({behavior:"smooth"});$("viewServices").onclick=()=>sg.scrollIntoView({behavior:"smooth"});
 function useLocation(){if(!navigator.geolocation){msg("Location is not supported by this browser.");return}navigator.geolocation.getCurrentPosition(()=>{ $("locationText").textContent="Nearby"; msg("Location detected. Nearby matching is currently a demo feature.");},()=>msg("Location permission was not granted."))}
 $("locationBtn").onclick=useLocation;$("useLocation").onclick=useLocation;
