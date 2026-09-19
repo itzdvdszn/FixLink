@@ -1,0 +1,692 @@
+/* ================================
+   FIXLINK MOBILE HOMEPAGE
+   ================================ */
+@media (max-width: 600px) {
+
+  body {
+    padding-bottom: 68px;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .topbar {
+    height: 62px;
+    padding: 0 12px;
+  }
+
+  .brand {
+    gap: 4px;
+    min-width: 0;
+  }
+
+  .fixlink-logo {
+    width: 100px;
+    max-height: 48px;
+  }
+
+  .brand-text {
+    font-size: 18px;
+    letter-spacing: -0.7px;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .location-btn {
+    font-size: 10px;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .account-btn,
+  .create-account-btn {
+    padding: 7px 8px;
+    font-size: 10px;
+  }
+
+  .icon-btn {
+    font-size: 19px;
+  }
+
+  .profile-circle {
+    width: 32px;
+    height: 32px;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 315px;
+  }
+
+  .hero-copy {
+    width: 94%;
+    padding: 28px 0;
+  }
+
+  .hero h1 {
+    font-size: 29px;
+    line-height: 1.08;
+    margin-bottom: 9px;
+  }
+
+  .hero p {
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 13px;
+    max-width: 100%;
+  }
+
+  /* Search */
+  .searchbar {
+    min-height: 52px;
+    border-radius: 13px;
+    padding: 5px 8px;
+  }
+
+  .search-icon {
+    font-size: 23px;
+    margin-right: 7px;
+  }
+
+  .searchbar input {
+    height: 38px;
+    font-size: 12px;
+  }
+
+  .searchbar button {
+    height: 38px;
+    font-size: 11px;
+  }
+
+  /* Sections */
+  .section {
+    width: 94%;
+    margin: 20px auto;
+  }
+
+  .section-heading {
+    margin-bottom: 10px;
+  }
+
+  .section-heading h2 {
+    font-size: 18px;
+  }
+
+  .view-all {
+    font-size: 11px;
+  }
+
+  .section-subtitle {
+    font-size: 10px;
+  }
+
+  /* Services */
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .service-card {
+    height: 115px;
+    border-radius: 10px;
+  }
+
+  .service-label {
+    font-size: 11px;
+    padding: 9px 6px;
+  }
+
+  .service-icon {
+    width: 28px;
+    height: 28px;
+    left: 7px;
+    bottom: 31px;
+    font-size: 13px;
+  }
+
+  /* Trust section */
+  .trust-strip {
+    width: 94%;
+    margin: 20px auto;
+    padding: 14px 7px;
+    border-radius: 11px;
+    gap: 10px;
+  }
+
+  .trust-strip b {
+    font-size: 20px;
+  }
+
+  .trust-strip strong {
+    font-size: 10px;
+  }
+
+  .trust-strip small {
+    font-size: 9px;
+  }
+
+  /* Professionals */
+  .pro-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .pro-card {
+    border-radius: 10px;
+  }
+
+  .pro-image {
+    height: 80px;
+  }
+
+  .pro-body {
+    padding: 8px;
+  }
+
+  .pro-body h3 {
+    font-size: 11px;
+    margin-bottom: 4px;
+  }
+
+  .rating {
+    font-size: 10px;
+  }
+
+  .meta {
+    font-size: 9px;
+    margin: 4px 0;
+  }
+
+  .tag {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+
+  .price {
+    font-size: 10px;
+    margin-top: 7px;
+  }
+
+  /* Bottom navigation */
+  .bottom-nav {
+    height: 64px;
+  }
+
+  .nav-item {
+    font-size: 9px;
+    gap: 2px;
+  }
+
+  .nav-item span {
+    font-size: 18px;
+  }
+
+  /* AI assistant */
+  .assistant-launcher {
+    right: 10px;
+    bottom: 75px;
+  }
+
+  .assistant-button {
+    padding: 9px 12px;
+    font-size: 10px;
+    border-radius: 20px;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 28px 5% 85px;
+  }
+
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 12px;
+  }
+
+  .footer-wordmark {
+    font-size: 21px;
+  }
+
+  .footer-brand p,
+  .footer-group a,
+  .footer-bottom a,
+  .footer-bottom {
+    font-size: 10px;
+  }
+
+  .footer-group h3 {
+    font-size: 11px;
+  }
+}/* ================================
+   RESTORE NORMAL HOMEPAGE SIZING
+   ================================ */
+
+/* Keep the homepage at its normal size on phones */
+@media (max-width: 600px) {
+
+  body {
+    padding-bottom: 82px;
+    overflow-x: hidden;
+  }
+
+  /* Header */
+  .topbar {
+    height: 76px;
+    padding: 0 4%;
+  }
+
+  .brand {
+    gap: 0;
+  }
+
+  .fixlink-logo {
+    width: 125px;
+    max-height: 62px;
+  }
+
+  .brand-text {
+    font-size: 20px;
+  }
+
+  .tagline {
+    display: block;
+    font-size: 8px;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+
+  .location-btn {
+    font-size: 11px;
+    max-width: none;
+  }
+
+  .account-btn,
+  .create-account-btn {
+    padding: 8px 9px;
+    font-size: 12px;
+  }
+
+  .icon-btn {
+    font-size: 24px;
+  }
+
+  .profile-circle {
+    display: none !important;
+  }
+
+  /* Hero */
+  .hero {
+    min-height: 390px;
+  }
+
+  .hero-copy {
+    width: 92%;
+    padding: 38px 0;
+  }
+
+  .hero h1 {
+    font-size: 36px;
+    line-height: 1.02;
+  }
+
+  .hero p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+
+  /* Search */
+  .searchbar {
+    height: auto;
+    min-height: 58px;
+    padding: 8px 10px;
+    border-radius: 20px;
+  }
+
+  .search-icon {
+    font-size: 32px;
+  }
+
+  .searchbar input {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  .searchbar button {
+    height: 42px;
+    font-size: 13px;
+  }
+
+  /* Services */
+  .section {
+    width: 92%;
+    margin: 28px auto;
+  }
+
+  .section-heading h2 {
+    font-size: 22px;
+  }
+
+  .service-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .service-card {
+    height: 145px;
+  }
+
+  .service-label {
+    font-size: 11px;
+    padding: 14px 10px;
+  }
+
+  /* Trust section */
+  .trust-strip {
+    width: 92%;
+    margin: 30px auto;
+    padding: 22px 12px;
+    gap: 18px;
+  }
+
+  .trust-strip b {
+    font-size: 27px;
+  }
+
+  .trust-strip strong {
+    font-size: 14px;
+  }
+
+  /* Professionals */
+  .pro-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .pro-image {
+    height: 95px;
+  }
+
+  .pro-body {
+    padding: 9px;
+  }
+
+  .pro-body h3 {
+    font-size: 12px;
+  }
+
+  /* Bottom navigation */
+  .bottom-nav {
+    height: 72px;
+  }
+
+  .nav-item {
+    font-size: 11px;
+  }
+
+  .nav-item span {
+    font-size: 20px;
+  }
+
+  /* Assistant */
+  .assistant-launcher {
+    right: 24px;
+    bottom: 92px;
+  }
+
+  .assistant-button {
+    padding: 12px 17px;
+    font-size: 12px;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 34px 6% 100px;
+  }
+}
+
+
+/* ================================
+   REMOVE TOP-RIGHT PROFILE BUTTON
+   ================================ */
+
+.profile-circle {
+  display: none !important;
+}/* =========================================
+   FINAL FIX — KEEP HOMEPAGE SIZE + HIDE
+   TOP-RIGHT PROFILE/ENDING BUTTON
+   ========================================= */
+
+/* Keep the homepage from being squeezed */
+@media (max-width: 600px) {
+  .topbar {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .brand {
+    flex-shrink: 0;
+  }
+
+  .header-actions {
+    flex-shrink: 0;
+  }
+
+  /* Remove the extra profile circle/button */
+  .profile-circle,
+  .profile-btn,
+  .user-profile,
+  .topbar .profile {
+    display: none !important;
+  }
+}
+
+/* Desktop + mobile: hide the unwanted profile element */
+.profile-circle,
+.profile-btn,
+.user-profile,
+.topbar .profile {
+  display: none !important;
+}
+/* FIXLINK HOMEPAGE FINAL OVERRIDES */
+
+/* Keep the top bar clean without shrinking the homepage */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+/* Keep the FixLink logo and name together */
+.brand-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+
+/* Keep the logo at a good size */
+.brand-link img {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+}
+
+/* Make sure the FixLink name remains visible */
+.brand-link,
+.brand-link span,
+.brand-link strong {
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+/* Remove the unwanted empty/ending area on the top-right */
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Don't allow an empty right-side area to take unnecessary space */
+.topbar-actions:empty {
+  display: none !important;
+}
+
+/* Keep the main homepage full-size */
+.hero {
+  width: 100%;
+}
+
+/* Prevent the homepage from becoming unnecessarily compressed */
+.hero-copy {
+  flex: 1;
+}
+
+/* Mobile adjustment */
+@media (max-width: 700px) {
+  .topbar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .brand-link img {
+    width: 38px;
+    height: 38px;
+  }
+}/* FIXLINK FINAL OVERRIDE */
+@media (min-width: 769px) {
+  .hero,
+  .hero-section {
+    padding-right: 0 !important;
+  }
+
+  .hero-content,
+  .hero-inner {
+    max-width: 1200px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .hero-image,
+  .hero-visual,
+  .hero-card {
+    max-width: 100% !important;
+  }
+}
+/* =========================================
+   FIXLINK LOADING SCREEN
+   ========================================= */
+
+#fixlink-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.6s ease, visibility 0.6s ease;
+}
+
+#fixlink-loader.hide {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.fixlink-loader-content {
+  text-align: center;
+  animation: fixlinkLoaderAppear 0.8s ease forwards;
+}
+
+.fixlink-loader-logo {
+  width: 90px;
+  height: 90px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.fixlink-loader-content h1 {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 800;
+  color: #062b5c;
+  letter-spacing: -0.5px;
+}
+
+.fixlink-loader-content p {
+  margin: 6px 0 22px;
+  font-size: 14px;
+  color: #666;
+}
+
+.fixlink-loading-dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+}
+
+.fixlink-loading-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #0877e1;
+  animation: fixlinkDot 1.2s infinite ease-in-out;
+}
+
+.fixlink-loading-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.fixlink-loading-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fixlinkLoaderAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fixlinkDot {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+
+  30% {
+    transform: translateY(-6px);
+    opacity: 1;
+  }
+}
+/* BLUE FIXLINK LOADING SCREEN */
+#fixlink-loader {
+  background: #0877e8 !important;
+}
+
+#fixlink-loader .fixlink-loader-content h1,
+#fixlink-loader .fixlink-loader-content p {
+  color: #ffffff !important;
+}
+
+#fixlink-loader .fixlink-loading-dots span {
+  background: #ffffff !important;
+}
