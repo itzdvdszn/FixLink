@@ -291,13 +291,14 @@ $("fixlink-home-brand")?.addEventListener("click", () => {
 document.querySelectorAll(".auth-tab").forEach(t=>t.onclick=()=>{accountRole=t.dataset.role;document.querySelectorAll(".auth-tab").forEach(x=>x.classList.toggle("active",x===t));updateAccountCopy()});
 $("accountForm").addEventListener("submit", async e => {
   e.preventDefault();
+const form.reset();
 
-  if (!e.currentTarget.checkValidity()) {
-    e.currentTarget.reportValidity();
-    return;
-  }
+if (!form.checkValidity()) {
+  form.reportValidity();
+  return;
+}
 
-  const d = new FormData(e.currentTarget);
+const d = new FormData(form);
   const email = d.get("email").trim();
   const password = d.get("password");
 
@@ -355,8 +356,8 @@ $("accountForm").addEventListener("submit", async e => {
       `${profile.role[0].toUpperCase() + profile.role.slice(1)} sign-in successful.`
     );
 
-    e.currentTarget.reset();
-    closeModal(accountModal);
+    form.reset();
+closeModal(customerModal);
 
   } catch (error) {
     console.error("Sign-in error:", error);
