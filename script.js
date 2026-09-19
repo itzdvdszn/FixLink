@@ -35,10 +35,237 @@ services.forEach(([name])=>{$("trade").insertAdjacentHTML("beforeend",`<option>$
 function watchPasswordMatch(form){const password=form.querySelector('[name="password"]'),confirmation=form.querySelector('[name="confirmPassword"]'),message=form.querySelector('.password-match-message');const check=()=>{const incomplete=!confirmation.value||!password.value;message.textContent=incomplete?"":password.value===confirmation.value?"Passwords match.":"Passwords do not match.";message.className=`password-match-message ${incomplete?"":password.value===confirmation.value?"match":"mismatch"}`};password.addEventListener("input",check);confirmation.addEventListener("input",check)}
 watchPasswordMatch($("proForm"));watchPasswordMatch($("customerForm"));
 document.querySelectorAll(".password-toggle").forEach(button=>button.onclick=()=>{const input=$(button.dataset.target),visible=input.type==="text";input.type=visible?"password":"text";button.textContent=visible?"Show":"Hide";button.setAttribute("aria-label",`${visible?"Show":"Hide"} password`)})
-$("nextStep").onclick=()=>{if(!validate())return;const stepData=new FormData($("proForm"));if(current===0&&stepData.get("password")!==stepData.get("confirmPassword")){msg("Passwords do not match.");$("proForm [name=confirmPassword]").focus();return}if(current<steps.length-1){current++;update();proModal.querySelector(".modal-card").scrollTo({top:0,behavior:"smooth"})}else{const f=$("proForm"),d=new FormData(f);const publicProfile={name:d.get("fullName"),trade:d.get("trade"),city:d.get("city"),experience:d.get("experience"),startingPrice:d.get("startingPrice")};savePros([...getPros(),publicProfile]);localStorage.setItem(ACCOUNT_KEY,JSON.stringify({role:"professional",name:d.get("fullName"),email:d.get("email")}));msg("Professional account and profile created on this device.");f.reset();current=0;update();closeModal(proModal);renderPros()}};
+$("nextStep").onclick = async () => {
+  if (!validate()) return;
+
+  const stepData = new FormData($("proForm"));
+
+  if (
+    current === 0 &&
+    stepData.get("password") !== stepData.get("confirmPassword")
+  ) {
+    msg("Passwords do not match.");
+    $("proForm [name=confirmPassword]").focus();
+    return;
+  }
+
+  if (current < steps.length - 1) {
+    current++;
+    update();
+    proModal.querySelector(".modal-card").scrollTo({
+      top: 0,
+      behavior: "smooth"
+    });
+    return;
+  }
+
+  const f = $("proForm");
+  const d = new FormData(f);
+
+  const name = d.get("fullName").trim();
+  const phone = d.get("phone").trim();
+  const email = d.get("email").trim();
+  const city = d.get("city").trim();
+  const password = d.get("password");
+  const trade = d.get("trade");
+  const experience = d.get("experience");
+  const startingPrice = d.get("startingPrice");
+
+  try {
+    msg("Creating your professional account...");
+
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+          phone,
+          role: "professional",
+          location: city
+        }
+      }
+    });
+
+    if (error) {
+      msg(error.message);
+      return;
+    }
+
+    if (!data.user) {
+      msg("Professional account could not be created.");
+      return;
+    }
+
+    // The database trigger creates the profiles row automatically.
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq("user_id", data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error("Professional profile lookup error:", profileError);
+      msg("Account created, but profile setup is still processing.");
+      return;
+    }
+
+    const { error: professionalError } = await supabaseClient
+      .from("professionals")
+      .insert({
+        profile_id: profile.id,
+        full_name: name,
+        email,
+        phone,
+        location: city
+      });
+
+    if (professionalError) {
+      console.error("Professional database error:", professionalError);
+      msg("Account created, but professional profile setup failed.");
+      return;
+    }
+
+    // Keep the existing public/demo professional display working.
+    const publicProfile = {
+      name,
+      trade,
+      city,
+      experience,
+      startingPrice
+    };
+
+    savePros([...getPros(), publicProfile]);
+
+    localStorage.setItem(
+      ACCOUNT_KEY,
+      JSON.stringify({
+        role: "professional",
+        name,
+        email,
+        city,
+        userId: data.user.id
+      })
+    );
+
+    msg("Professional account created! Check your email to confirm it.");
+
+    f.reset();
+    current = 0;
+    update();
+    closeModal(proModal);
+    renderPros();
+
+  } catch (error) {
+    console.error("Professional signup error:", error);
+    msg("Something went wrong. Please try again.");
+  }
+};
 $("prevStep").onclick=()=>{if(current){current--;update()}};
 $("proForm").addEventListener("submit",e=>e.preventDefault());
-$("customerForm").addEventListener("submit",e=>{e.preventDefault();if(!e.currentTarget.checkValidity()){e.currentTarget.reportValidity();return}const d=new FormData(e.currentTarget);if(d.get("password")!==d.get("confirmPassword")){msg("Passwords do not match.");$("customerForm [name=confirmPassword]").focus();return}localStorage.setItem(ACCOUNT_KEY,JSON.stringify({role:"customer",name:d.get("name"),email:d.get("email"),city:d.get("city")}));msg("Customer account created on this device.");e.currentTarget.reset();closeModal(customerModal)});$("professionalSignup").onclick=()=>{closeModal(customerModal);openPro()};
+$("customerForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if (!e.currentTarget.checkValidity()) {
+    e.currentTarget.reportValidity();
+    return;
+  }
+
+  const d = new FormData(e.currentTarget);
+
+  if (d.get("password") !== d.get("confirmPassword")) {
+    msg("Passwords do not match.");
+    $("customerForm [name=confirmPassword]").focus();
+    return;
+  }
+
+  const name = d.get("name").trim();
+  const phone = d.get("phone").trim();
+  const email = d.get("email").trim();
+  const city = d.get("city").trim();
+  const password = d.get("password");
+
+  try {
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          full_name: name,
+          phone,
+          role: "customer",
+          location: city
+        }
+      }
+    });
+
+    if (error) {
+      msg(error.message);
+      return;
+    }
+
+    if (!data.user) {
+      msg("Account could not be created. Please try again.");
+      return;
+    }
+
+    // The database trigger creates the profiles row automatically.
+    // The customer record is created after the profile exists.
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq("user_id", data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error("Profile lookup error:", profileError);
+      msg("Account created, but profile setup is still processing. Please sign in shortly.");
+      e.currentTarget.reset();
+      closeModal(customerModal);
+      return;
+    }
+
+    const { error: customerError } = await supabaseClient
+      .from("customers")
+      .insert({
+        profile_id: profile.id,
+        full_name: name,
+        email,
+        phone,
+        location: city
+      });
+
+    if (customerError) {
+      console.error("Customer profile error:", customerError);
+      msg("Account created, but customer profile setup failed.");
+      return;
+    }
+
+    localStorage.setItem(
+      ACCOUNT_KEY,
+      JSON.stringify({
+        role: "customer",
+        name,
+        email,
+        city,
+        userId: data.user.id
+      })
+    );
+
+    msg("Account created! Check your email to confirm your account.");
+    e.currentTarget.reset();
+    closeModal(customerModal);
+
+  } catch (error) {
+    console.error("Customer signup error:", error);
+    msg("Something went wrong. Please try again.");
+  }
+});
+
+$("professionalSignup").onclick = () => {
+  closeModal(customerModal);
+  openPro();
+};
 $("jobForm").addEventListener("submit",e=>{e.preventDefault();if(!e.currentTarget.checkValidity()){e.currentTarget.reportValidity();return}const data=new FormData(e.currentTarget),workerAmount=Number(data.get("budget")||0);if(workerAmount<=0){msg("Enter a budget to continue to payment.");return}const premium=localStorage.getItem(PREMIUM_KEY)==="active",customerFee=Math.ceil(workerAmount*COMMISSION_RATE),professionalFee=premium?0:Math.ceil(workerAmount*STANDARD_PROFESSIONAL_RATE),payout=workerAmount-professionalFee,total=workerAmount+customerFee;pendingPayment={service:data.get("service"),workerAmount,customerFee,professionalFee,payout,premium,description:data.get("description")};$("workerAmount").textContent=`₦${workerAmount.toLocaleString()}`;$("commissionAmount").textContent=`₦${customerFee.toLocaleString()}`;$("professionalFeeLabel").textContent=premium?"Premium professional platform deduction (0%)":"Standard professional platform deduction (10%)";$("professionalFeeAmount").textContent=`₦${professionalFee.toLocaleString()}`;$("payoutLabel").textContent=premium?"Premium professional receives in full":"Standard professional payout";$("payoutAmount").textContent=`₦${payout.toLocaleString()}`;$("totalAmount").textContent=`₦${total.toLocaleString()}`;showModal(paymentModal)});
 $("payNow").onclick=()=>{const email=$("paymentEmail");if(!email.checkValidity()){email.reportValidity();return}if(!pendingPayment)return;const amount=pendingPayment.workerAmount+pendingPayment.customerFee;if(!window.PaystackPop||PAYSTACK_PUBLIC_KEY.includes("replace_with")){msg("Add your Paystack public key in script.js to enable live checkout.");return}const handler=PaystackPop.setup({key:PAYSTACK_PUBLIC_KEY,email:email.value,amount:amount*100,currency:"NGN",metadata:{custom_fields:[{display_name:"Service",variable_name:"service",value:pendingPayment.service},{display_name:"FixLink customer usage fee",variable_name:"usage_fee",value:`₦${pendingPayment.customerFee.toLocaleString()}`},{display_name:"Professional platform deduction",variable_name:"professional_fee",value:`₦${pendingPayment.professionalFee.toLocaleString()}`},{display_name:"Professional payout",variable_name:"professional_payout",value:`₦${pendingPayment.payout.toLocaleString()}`},{display_name:"Premium status",variable_name:"premium",value:pendingPayment.premium?"active":"standard"}]},callback:transaction=>{msg(`Payment successful: ${transaction.reference}`);pendingPayment=null;$("paymentEmail").value="";$("jobForm").reset();closeModal(paymentModal)},onClose:()=>msg("Payment window closed.")});handler.openIframe()};
 function openCustomer(){showModal(customerModal)} function openPro(){showModal(proModal);update()} function openJob(service=""){if(service)$("jobService").value=service;showModal(jobModal)}
@@ -57,7 +284,80 @@ function updateAccountCopy(){const professional=accountRole==="professional";$("
 function openAccount(role="customer"){accountRole=role;document.querySelectorAll(".auth-tab").forEach(t=>t.classList.toggle("active",t.dataset.role===role));updateAccountCopy();showModal(accountModal)}
 $("profileBtn").onclick=()=>openAccount("customer");$("accountBtn").onclick=()=>openAccount("customer");$("createAccountBtn").onclick=()=>openCustomer();$("fixlink-home-brand").onclick=()=>{if(location.pathname.endsWith("index.html"))return;};
 document.querySelectorAll(".auth-tab").forEach(t=>t.onclick=()=>{accountRole=t.dataset.role;document.querySelectorAll(".auth-tab").forEach(x=>x.classList.toggle("active",x===t));updateAccountCopy()});
-$("accountForm").addEventListener("submit",e=>{e.preventDefault();if(!e.currentTarget.checkValidity()){e.currentTarget.reportValidity();return}localStorage.setItem(ACCOUNT_KEY,JSON.stringify({role:accountRole,email:new FormData(e.currentTarget).get("email")}));msg(`${accountRole[0].toUpperCase()+accountRole.slice(1)} demo sign-in successful.`);e.currentTarget.reset();closeModal(accountModal)});
+$("accountForm").addEventListener("submit", async e => {
+  e.preventDefault();
+
+  if (!e.currentTarget.checkValidity()) {
+    e.currentTarget.reportValidity();
+    return;
+  }
+
+  const d = new FormData(e.currentTarget);
+  const email = d.get("email").trim();
+  const password = d.get("password");
+
+  try {
+    msg("Signing you in...");
+
+    const { data, error } = await supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      msg(error.message);
+      return;
+    }
+
+    if (!data.user) {
+      msg("Sign in failed. Please try again.");
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabaseClient
+      .from("profiles")
+      .select("id, full_name, email, phone, role, location")
+      .eq("user_id", data.user.id)
+      .single();
+
+    if (profileError) {
+      console.error("Profile lookup error:", profileError);
+      msg("Signed in, but your profile could not be loaded.");
+      return;
+    }
+
+    if (profile.role !== accountRole) {
+      await supabaseClient.auth.signOut();
+
+      msg(
+        `This account is registered as a ${profile.role}, not a ${accountRole}.`
+      );
+      return;
+    }
+
+    localStorage.setItem(
+      ACCOUNT_KEY,
+      JSON.stringify({
+        role: profile.role,
+        name: profile.full_name,
+        email: profile.email,
+        city: profile.location || "",
+        userId: data.user.id
+      })
+    );
+
+    msg(
+      `${profile.role[0].toUpperCase() + profile.role.slice(1)} sign-in successful.`
+    );
+
+    e.currentTarget.reset();
+    closeModal(accountModal);
+
+  } catch (error) {
+    console.error("Sign-in error:", error);
+    msg("Something went wrong. Please try again.");
+  }
+});
 $("viewPros").onclick=()=>pg.scrollIntoView({behavior:"smooth"});$("viewServices").onclick=()=>sg.scrollIntoView({behavior:"smooth"});
 function useLocation(){if(!navigator.geolocation){msg("Location is not supported by this browser.");return}navigator.geolocation.getCurrentPosition(()=>{ $("locationText").textContent="Nearby"; msg("Location detected. Nearby matching is currently a demo feature.");},()=>msg("Location permission was not granted."))}
 $("locationBtn").onclick=useLocation;$("useLocation").onclick=useLocation;
