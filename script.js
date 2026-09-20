@@ -350,7 +350,74 @@ $("accountForm").addEventListener("submit", async e => {
 
 $("viewPros").onclick=()=>pg.scrollIntoView({behavior:"smooth"});$("viewServices").onclick=()=>sg.scrollIntoView({behavior:"smooth"});
 function useLocation(){if(!navigator.geolocation){msg("Location is not supported by this browser.");return}navigator.geolocation.getCurrentPosition(()=>{ $("locationText").textContent="Nearby"; msg("Location detected. Nearby matching is currently a demo feature.");},()=>msg("Location permission was not granted."))}
-$("locationBtn").onclick=useLocation;$("useLocation").onclick=useLocation;
+$("locationBtn").onclick=useLocation;
+$("useLocation").onclick=useLocation;
+// =========================================================
+// FIXLINK PROFESSIONAL LOCATION
+// =========================================================
+
+let professionalLatitude = null;
+let professionalLongitude = null;
+
+const professionalLocationButton = $("allowProfessionalLocation");
+const professionalLocationStatus = $("professionalLocationStatus");
+
+if (professionalLocationButton) {
+  professionalLocationButton.addEventListener("click", () => {
+
+    if (!navigator.geolocation) {
+      professionalLocationStatus.textContent =
+        "Location is not supported by this browser.";
+      return;
+    }
+
+    professionalLocationButton.disabled = true;
+    professionalLocationButton.textContent = "Detecting...";
+
+    professionalLocationStatus.textContent =
+      "Requesting your location. Please allow location access in your browser.";
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+
+        professionalLatitude = position.coords.latitude;
+        professionalLongitude = position.coords.longitude;
+
+        professionalLocationStatus.textContent =
+          "✓ Location detected successfully. Your position can be used for nearby customer matching.";
+
+        professionalLocationButton.textContent = "Location allowed";
+        professionalLocationButton.disabled = false;
+      },
+
+      (error) => {
+
+        professionalLocationButton.disabled = false;
+        professionalLocationButton.textContent = "Allow location";
+
+        if (error.code === 1) {
+          professionalLocationStatus.textContent =
+            "Location permission was denied. Please allow location access in your browser settings and try again.";
+        } else if (error.code === 2) {
+          professionalLocationStatus.textContent =
+            "Your location could not be detected. Please check your device location settings and try again.";
+        } else if (error.code === 3) {
+          professionalLocationStatus.textContent =
+            "Location detection timed out. Please try again.";
+        } else {
+          professionalLocationStatus.textContent =
+            "Unable to detect your location. Please try again.";
+        }
+      },
+
+      {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+      }
+    );
+  });
+}
 $("searchInput").oninput=e=>{const q=e.target.value.toLowerCase().trim();renderServices(q?services.filter(s=>s[0].toLowerCase().includes(q)):services)};
 $("searchInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const q=e.target.value.trim();if(q)msg(`Showing services matching “${q}”.`)}};
 sg.addEventListener("click",e=>{const c=e.target.closest(".service-card");if(c)openJob(c.dataset.service)});pg.addEventListener("click",e=>{const card=e.target.closest(".pro-card"),message=e.target.closest(".message-pro"),request=e.target.closest(".request-pro");if(message)openMessage(message.dataset.name,message.dataset.trade,message.dataset.phone);else if(request)openJob(request.dataset.trade);else if(card)openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])});pg.addEventListener("keydown",e=>{const card=e.target.closest(".pro-card");if(card&&["Enter"," "].includes(e.key)){e.preventDefault();openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])}});
