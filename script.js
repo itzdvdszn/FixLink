@@ -214,56 +214,13 @@ $("customerForm").addEventListener("submit", async e => {
     }
 
     /*
-     * The database trigger creates the profiles row.
-     * We retry because the profile may take a moment
-     * to become readable through the API.
+     * The database trigger automatically creates:
+     * 1. The profiles row
+     * 2. The customers row
+     *
+     * We do not read those rows here because email
+     * confirmation means the browser is not authenticated yet.
      */
-    let profile = null;
-    let profileError = null;
-
-    for (let attempt = 1; attempt <= 6; attempt++) {
-      const result = await supabaseClient
-        .from("profiles")
-        .select("id")
-        .eq("user_id", data.user.id)
-        .maybeSingle();
-
-      profile = result.data;
-      profileError = result.error;
-
-      if (profile) {
-        break;
-      }
-
-      if (attempt < 6) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-      }
-    }
-
-    if (!profile) {
-      console.error("Profile lookup error:", profileError);
-      msg("Account created, but profile setup could not be completed. Please sign in shortly.");
-      form.reset();
-      closeModal(customerModal);
-      return;
-    }
-
-    // Create the customer record linked to the profile.
-    const { error: customerError } = await supabaseClient
-      .from("customers")
-      .insert({
-        profile_id: profile.id,
-        full_name: name,
-        email,
-        phone,
-        location: city
-      });
-
-    if (customerError) {
-      console.error("Customer profile error:", customerError);
-      msg("Account created, but customer profile setup failed.");
-      return;
-    }
 
     localStorage.setItem(
       ACCOUNT_KEY,
