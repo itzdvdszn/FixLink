@@ -188,6 +188,8 @@ $("customerForm").addEventListener("submit", async e => {
   const password = d.get("password");
 
   try {
+    msg("Creating your account...");
+
     const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
@@ -211,16 +213,36 @@ $("customerForm").addEventListener("submit", async e => {
       return;
     }
 
-    // The database trigger creates the profiles row automatically.
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .eq("user_id", data.user.id)
-      .single();
+    /*
+     * The database trigger creates the profiles row.
+     * We retry because the profile may take a moment
+     * to become readable through the API.
+     */
+    let profile = null;
+    let profileError = null;
 
-    if (profileError) {
+    for (let attempt = 1; attempt <= 6; attempt++) {
+      const result = await supabaseClient
+        .from("profiles")
+        .select("id")
+        .eq("user_id", data.user.id)
+        .maybeSingle();
+
+      profile = result.data;
+      profileError = result.error;
+
+      if (profile) {
+        break;
+      }
+
+      if (attempt < 6) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+
+    if (!profile) {
       console.error("Profile lookup error:", profileError);
-      msg("Account created, but profile setup is still processing. Please sign in shortly.");
+      msg("Account created, but profile setup could not be completed. Please sign in shortly.");
       form.reset();
       closeModal(customerModal);
       return;
