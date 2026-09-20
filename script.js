@@ -356,3 +356,94 @@ $("searchInput").onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();const q=e.
 sg.addEventListener("click",e=>{const c=e.target.closest(".service-card");if(c)openJob(c.dataset.service)});pg.addEventListener("click",e=>{const card=e.target.closest(".pro-card"),message=e.target.closest(".message-pro"),request=e.target.closest(".request-pro");if(message)openMessage(message.dataset.name,message.dataset.trade,message.dataset.phone);else if(request)openJob(request.dataset.trade);else if(card)openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])});pg.addEventListener("keydown",e=>{const card=e.target.closest(".pro-card");if(card&&["Enter"," "].includes(e.key)){e.preventDefault();openProfessionalDetails(getRenderedPros()[Number(card.dataset.proIndex)])}});
 mg.addEventListener("click",e=>{const button=e.target.closest(".monitor-action");if(button){const job=monitoringJobs[Number(button.dataset.monitorIndex)];msg(`${job.name} is ${job.distance}. ${job.eta}.`)}});
 ["closeModal","closeCustomer","closeJob","closeAccount","closeMessage","closePayment","closePremium","closeAssistant"].forEach(id=>$(id).onclick=closeAll);$("closeProfessional").onclick=()=>closeModal(professionalModal);[proModal,customerModal,jobModal,accountModal,messageModal,professionalModal,paymentModal,premiumModal,assistantModal].forEach(m=>m.addEventListener("click",e=>{if(e.target===m)closeModal(m)}));document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAll()});
+// =========================================================
+// FIXLINK — AUTHENTICATION HEADER
+// Updates the top-right buttons based on Supabase login state.
+// =========================================================
+
+function updateHeaderAuth(session) {
+  const accountBtn = $("accountBtn");
+  const createAccountBtn = $("createAccountBtn");
+  const headerActions = document.querySelector(".header-actions");
+
+  if (!headerActions) return;
+
+  let profileTopBtn = $("profileTopBtn");
+  let signOutTopBtn = $("signOutTopBtn");
+
+  if (session && session.user) {
+    // Hide Sign in / Create account
+    if (accountBtn) accountBtn.hidden = true;
+    if (createAccountBtn) createAccountBtn.hidden = true;
+
+    // Create Profile button if it doesn't exist
+    if (!profileTopBtn) {
+      profileTopBtn = document.createElement("button");
+      profileTopBtn.id = "profileTopBtn";
+      profileTopBtn.className = "account-btn";
+      profileTopBtn.textContent = "Profile";
+
+      profileTopBtn.onclick = () => {
+        window.location.href = "profile.html";
+      };
+
+      headerActions.appendChild(profileTopBtn);
+    }
+
+    // Create Sign out button if it doesn't exist
+    if (!signOutTopBtn) {
+      signOutTopBtn = document.createElement("button");
+      signOutTopBtn.id = "signOutTopBtn";
+      signOutTopBtn.className = "create-account-btn";
+      signOutTopBtn.textContent = "Sign out";
+
+      signOutTopBtn.onclick = async () => {
+        const { error } = await supabaseClient.auth.signOut();
+
+        if (error) {
+          console.error("Sign out error:", error);
+          msg("Unable to sign out. Please try again.");
+          return;
+        }
+
+        localStorage.removeItem(ACCOUNT_KEY);
+
+        msg("You have been signed out.");
+
+        updateHeaderAuth(null);
+      };
+
+      headerActions.appendChild(signOutTopBtn);
+    }
+
+    profileTopBtn.hidden = false;
+    signOutTopBtn.hidden = false;
+
+  } else {
+    // Show Sign in / Create account
+    if (accountBtn) accountBtn.hidden = false;
+    if (createAccountBtn) createAccountBtn.hidden = false;
+
+    // Hide logged-in buttons
+    if (profileTopBtn) profileTopBtn.hidden = true;
+    if (signOutTopBtn) signOutTopBtn.hidden = true;
+  }
+}
+
+
+// Check current Supabase session when the page loads.
+supabaseClient.auth.getSession().then(({ data, error }) => {
+  if (error) {
+    console.error("Session check error:", error);
+    updateHeaderAuth(null);
+    return;
+  }
+
+  updateHeaderAuth(data.session);
+});
+
+
+// Automatically update the header whenever authentication changes.
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  updateHeaderAuth(session);
+});
