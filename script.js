@@ -166,12 +166,14 @@ $("proForm").addEventListener("submit",e=>e.preventDefault());
 $("customerForm").addEventListener("submit", async e => {
   e.preventDefault();
 
-  if (!e.currentTarget.checkValidity()) {
-    e.currentTarget.reportValidity();
+  const form = e.currentTarget;
+
+  if (!form.checkValidity()) {
+    form.reportValidity();
     return;
   }
 
-  const d = new FormData(e.currentTarget);
+  const d = new FormData(form);
 
   if (d.get("password") !== d.get("confirmPassword")) {
     msg("Passwords do not match.");
@@ -210,7 +212,6 @@ $("customerForm").addEventListener("submit", async e => {
     }
 
     // The database trigger creates the profiles row automatically.
-    // The customer record is created after the profile exists.
     const { data: profile, error: profileError } = await supabaseClient
       .from("profiles")
       .select("id")
@@ -225,6 +226,7 @@ $("customerForm").addEventListener("submit", async e => {
       return;
     }
 
+    // Create the customer record linked to the profile.
     const { error: customerError } = await supabaseClient
       .from("customers")
       .insert({
@@ -261,7 +263,6 @@ $("customerForm").addEventListener("submit", async e => {
     msg("Something went wrong. Please try again.");
   }
 });
-
 $("professionalSignup").onclick = () => {
   closeModal(customerModal);
   openPro();
