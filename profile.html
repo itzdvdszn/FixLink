@@ -1,1 +1,432 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css"></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">ACCOUNT</span><h1>Your profile</h1><p>Manage your FixLink account and choose how you use the marketplace.</p></div><section class="page-grid"><article class="page-card"><h2>Customer account</h2><p>Sign in to manage requests, messages and bookings.</p><a class="primary" href="index.html">Sign in</a></article><article class="page-card"><h2>Professional account</h2><p>Create a profile and connect with customers looking for your trade.</p><a class="secondary" href="index.html">Become a professional</a></article></section></main><nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a><a class="nav-item active" href="profile.html"><span>○</span>Profile</a></nav></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <title>Profile - FixLink</title>
+
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="pages.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    .profile-loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: #52657a;
+    }
+
+    .profile-card {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .profile-avatar {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: #eaf3ff;
+      color: #0877e8;
+      display: grid;
+      place-items: center;
+      font-size: 30px;
+      font-weight: 800;
+      margin-bottom: 20px;
+    }
+
+    .profile-details {
+      display: grid;
+      gap: 14px;
+      margin-top: 22px;
+    }
+
+    .profile-detail {
+      padding: 15px 17px;
+      border: 1px solid #dce6f0;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .profile-detail small {
+      display: block;
+      font-size: 12px;
+      color: #718096;
+      margin-bottom: 5px;
+    }
+
+    .profile-detail strong {
+      display: block;
+      color: #062b5c;
+      font-size: 15px;
+      word-break: break-word;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 24px;
+    }
+
+    .account-type-badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eaf3ff;
+      color: #0877e8;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .profile-error {
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      border-radius: 12px;
+      background: #fff4f4;
+      border: 1px solid #f0caca;
+      color: #8a2d2d;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body class="standalone-page">
+
+<header class="topbar">
+  <a class="brand-link" href="index.html" aria-label="FixLink home">
+    <div class="brand">
+      <img
+        src="assets/fixlink-logo.png"
+        alt="FixLink"
+        class="fixlink-logo"
+      >
+
+      <div class="brand-copy">
+        <span class="brand-text">
+          Fix<span class="brand-accent">Link</span>
+        </span>
+
+        <span class="tagline">
+          The right hands, right when you need them
+        </span>
+      </div>
+    </div>
+  </a>
+
+  <a class="page-back" href="index.html">Back to home</a>
+</header>
+
+
+<main class="page-main">
+
+  <div class="page-heading">
+    <span class="pill">ACCOUNT</span>
+    <h1>Your profile</h1>
+    <p>View and manage your FixLink account information.</p>
+  </div>
+
+
+  <section id="profileLoading" class="profile-loading">
+    Loading your profile...
+  </section>
+
+
+  <section
+    id="profileContent"
+    class="page-card profile-card"
+    hidden
+  >
+
+    <div id="profileAvatar" class="profile-avatar">
+      F
+    </div>
+
+    <div>
+      <span id="accountType" class="account-type-badge">
+        Customer
+      </span>
+
+      <h2 id="profileName" style="margin-top:10px;">
+        Your Name
+      </h2>
+
+      <p id="profileSubtitle">
+        Your FixLink customer account
+      </p>
+    </div>
+
+
+    <div class="profile-details">
+
+      <div class="profile-detail">
+        <small>Full name</small>
+        <strong id="profileFullName">—</strong>
+      </div>
+
+      <div class="profile-detail">
+        <small>Email address</small>
+        <strong id="profileEmail">—</strong>
+      </div>
+
+      <div class="profile-detail">
+        <small>Phone number</small>
+        <strong id="profilePhone">—</strong>
+      </div>
+
+      <div class="profile-detail">
+        <small>Location</small>
+        <strong id="profileLocation">—</strong>
+      </div>
+
+      <div class="profile-detail">
+        <small>Account created</small>
+        <strong id="profileCreated">—</strong>
+      </div>
+
+    </div>
+
+
+    <div class="profile-actions">
+
+      <a class="primary" href="index.html">
+        Find a professional
+      </a>
+
+      <a class="secondary" href="bookings.html">
+        My bookings
+      </a>
+
+      <button
+        id="signOutBtn"
+        class="secondary"
+        type="button"
+      >
+        Sign out
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <section
+    id="profileError"
+    class="profile-error"
+    hidden
+  ></section>
+
+</main>
+
+
+<nav class="bottom-nav">
+
+  <a class="nav-item" href="index.html">
+    <span>⌂</span>
+    Home
+  </a>
+
+  <a class="nav-item" href="search.html">
+    <span>⌕</span>
+    Search
+  </a>
+
+  <a class="nav-item" href="bookings.html">
+    <span>▣</span>
+    My Bookings
+  </a>
+
+  <a class="nav-item" href="messages.html">
+    <span>▢</span>
+    Messages
+  </a>
+
+  <a class="nav-item active" href="profile.html">
+    <span>○</span>
+    Profile
+  </a>
+
+</nav>
+
+
+<script>
+  const SUPABASE_URL =
+    "https://liykyosnqcebnnnewomx.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y";
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+
+  const loading = document.getElementById("profileLoading");
+  const content = document.getElementById("profileContent");
+  const errorBox = document.getElementById("profileError");
+
+
+  function showError(message) {
+    loading.hidden = true;
+    content.hidden = true;
+    errorBox.textContent = message;
+    errorBox.hidden = false;
+  }
+
+
+  function getInitial(name) {
+    return (name || "F").trim().charAt(0).toUpperCase();
+  }
+
+
+  async function loadProfile() {
+
+    loading.hidden = false;
+    content.hidden = true;
+    errorBox.hidden = true;
+
+    try {
+
+      const {
+        data: sessionData,
+        error: sessionError
+      } = await supabaseClient.auth.getSession();
+
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        showError("We could not load your session. Please sign in again.");
+        return;
+      }
+
+
+      const session = sessionData.session;
+
+      if (!session || !session.user) {
+        showError(
+          "You are not signed in. Please return to the home page and sign in."
+        );
+        return;
+      }
+
+
+      const userId = session.user.id;
+
+
+      const {
+        data: profile,
+        error: profileError
+      } = await supabaseClient
+        .from("profiles")
+        .select(`
+          id,
+          user_id,
+          full_name,
+          email,
+          phone,
+          role,
+          location,
+          created_at
+        `)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+
+      if (profileError) {
+        console.error("Profile error:", profileError);
+        showError(
+          "Your account is signed in, but your profile could not be loaded."
+        );
+        return;
+      }
+
+
+      if (!profile) {
+        showError(
+          "Your account exists, but no FixLink profile was found."
+        );
+        return;
+      }
+
+
+      document.getElementById("profileAvatar").textContent =
+        getInitial(profile.full_name);
+
+      document.getElementById("profileName").textContent =
+        profile.full_name || "FixLink User";
+
+      document.getElementById("profileFullName").textContent =
+        profile.full_name || "Not provided";
+
+      document.getElementById("profileEmail").textContent =
+        profile.email || session.user.email || "Not provided";
+
+      document.getElementById("profilePhone").textContent =
+        profile.phone || "Not provided";
+
+      document.getElementById("profileLocation").textContent =
+        profile.location || "Not provided";
+
+
+      const created = profile.created_at
+        ? new Date(profile.created_at).toLocaleDateString()
+        : "Not available";
+
+      document.getElementById("profileCreated").textContent = created;
+
+
+      const role = (profile.role || "customer").toLowerCase();
+
+      document.getElementById("accountType").textContent =
+        role === "professional"
+          ? "Professional"
+          : "Customer";
+
+      document.getElementById("profileSubtitle").textContent =
+        role === "professional"
+          ? "Your FixLink professional account"
+          : "Your FixLink customer account";
+
+
+      loading.hidden = true;
+      content.hidden = false;
+
+    } catch (error) {
+
+      console.error("Profile page error:", error);
+
+      showError(
+        "Something went wrong while loading your profile."
+      );
+    }
+  }
+
+
+  document
+    .getElementById("signOutBtn")
+    .addEventListener("click", async () => {
+
+      const {
+        error
+      } = await supabaseClient.auth.signOut();
+
+      if (error) {
+        console.error("Sign out error:", error);
+        showError("Unable to sign out. Please try again.");
+        return;
+      }
+
+      window.location.href = "index.html?v=17";
+    });
+
+
+  loadProfile();
+</script>
+
+
+</body>
+</html>
