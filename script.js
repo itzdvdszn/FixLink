@@ -62,14 +62,24 @@ $("nextStep").onclick = async () => {
   const f = $("proForm");
   const d = new FormData(f);
 
+  ```js
   const name = d.get("fullName").trim();
   const phone = d.get("phone").trim();
   const email = d.get("email").trim();
   const city = d.get("city").trim();
   const password = d.get("password");
-  const trade = d.get("trade");
-  const experience = d.get("experience");
-  const startingPrice = d.get("startingPrice");
+
+  const trade = d.get("trade") || "";
+  const experience = d.get("experience") || "";
+  const description = d.get("description") || "";
+  const radius = d.get("radius") || "";
+  const days = d.get("days") || "";
+  const hours = d.get("hours") || "";
+  const startingPrice = d.get("startingPrice") || "";
+
+  const availability = [days, hours]
+    .filter(Boolean)
+    .join(" • ");
 
   try {
     msg("Creating your professional account...");
@@ -82,51 +92,46 @@ $("nextStep").onclick = async () => {
           full_name: name,
           phone,
           role: "professional",
-          location: city
+          location: city,
+
+          // Professional information
+          trade: trade,
+          experience: experience ? Number(experience) : 0,
+          description: description,
+          radius: radius ? Number(radius) : null,
+          days: days,
+          hours: hours,
+          availability: availability,
+
+          // Other signup information
+          starting_price: startingPrice
         }
       }
     });
 
     if (error) {
+      console.error("Professional signup error:", error);
       msg(error.message);
       return;
     }
 
     if (!data.user) {
-      msg("Professional account could not be created.");
+      msg("Professional account could not be created. Please try again.");
       return;
     }
 
-    // The database trigger creates the profiles row automatically.
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .eq("user_id", data.user.id)
-      .single();
+    /*
+     * The database trigger creates the profiles row and
+     * professional row automatically using the metadata above.
+     *
+     * We deliberately DO NOT:
+     * - query the profiles table
+     * - insert into the professionals table
+     *
+     * This is important because email confirmation can mean
+     * the browser does not yet have an authenticated session.
+     */
 
-    if (profileError) {
-      console.error("Professional profile lookup error:", profileError);
-      msg("Account created, but profile setup is still processing.");
-      return;
-    }
-
-    const { error: professionalError } = await supabaseClient
-      .from("professionals")
-      .insert({
-        profile_id: profile.id,
-        full_name: name,
-        email,
-        phone,
-        location: city
-      });
-
-    if (professionalError) {
-      console.error("Professional database error:", professionalError);
-      msg("Account created, but professional profile setup failed.");
-      return;
-    }
-
-    // Keep the existing public/demo professional display working.
     const publicProfile = {
       name,
       trade,
@@ -160,7 +165,8 @@ $("nextStep").onclick = async () => {
     console.error("Professional signup error:", error);
     msg("Something went wrong. Please try again.");
   }
-};
+```
+
 $("prevStep").onclick=()=>{if(current){current--;update()}};
 $("proForm").addEventListener("submit",e=>e.preventDefault());
 $("customerForm").addEventListener("submit", async e => {
