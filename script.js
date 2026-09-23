@@ -62,7 +62,6 @@ $("nextStep").onclick = async () => {
   const f = $("proForm");
   const d = new FormData(f);
 
-  ```js
   const name = d.get("fullName").trim();
   const phone = d.get("phone").trim();
   const email = d.get("email").trim();
@@ -165,7 +164,6 @@ $("nextStep").onclick = async () => {
     console.error("Professional signup error:", error);
     msg("Something went wrong. Please try again.");
   }
-```
 
 $("prevStep").onclick=()=>{if(current){current--;update()}};
 $("proForm").addEventListener("submit",e=>e.preventDefault());
