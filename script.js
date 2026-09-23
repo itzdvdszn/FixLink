@@ -160,10 +160,11 @@ $("nextStep").onclick = async () => {
     closeModal(proModal);
     renderPros();
 
-  } catch (error) {
+   } catch (error) {
     console.error("Professional signup error:", error);
     msg("Something went wrong. Please try again.");
   }
+};
 
 $("prevStep").onclick=()=>{if(current){current--;update()}};
 $("proForm").addEventListener("submit",e=>e.preventDefault());
