@@ -470,20 +470,28 @@ function updateHeaderAuth(session) {
       signOutTopBtn.textContent = "Sign out";
 
       signOutTopBtn.onclick = async () => {
-        const { error } = await supabaseClient.auth.signOut();
+  const confirmed = window.confirm(
+    "Are you sure you want to sign out of FixLink?\n\nYou can always sign back in later using your account."
+  );
 
-        if (error) {
-          console.error("Sign out error:", error);
-          msg("Unable to sign out. Please try again.");
-          return;
-        }
+  if (!confirmed) {
+    return;
+  }
 
-        localStorage.removeItem(ACCOUNT_KEY);
+  const { error } = await supabaseClient.auth.signOut();
 
-        msg("You have been signed out.");
+  if (error) {
+    console.error("Sign out error:", error);
+    msg("Unable to sign out. Please try again.");
+    return;
+  }
 
-        updateHeaderAuth(null);
-      };
+  localStorage.removeItem(ACCOUNT_KEY);
+
+  msg("You have been signed out. You can sign back in anytime.");
+
+  updateHeaderAuth(null);
+};
 
       headerActions.appendChild(signOutTopBtn);
     }
