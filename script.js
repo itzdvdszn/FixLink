@@ -526,9 +526,8 @@ function updateHeaderAuth(session) {
       signOutTopBtn.className = "create-account-btn";
       signOutTopBtn.textContent = "Sign out";
 
-      signOutTopBtn.onclick = () => {
+      $("confirmSignOut").onclick = async () => {
   showSignOutModal();
-};
 
   const { error } = await supabaseClient.auth.signOut();
 
