@@ -520,29 +520,23 @@ function updateHeaderAuth(session) {
     }
 
     // Create Sign out button if it doesn't exist
-    if (!signOutTopBtn) {
-      signOutTopBtn = document.createElement("button");
-      signOutTopBtn.id = "signOutTopBtn";
-      signOutTopBtn.className = "create-account-btn";
-      signOutTopBtn.textContent = "Sign out";
+if (!signOutTopBtn) {
+  signOutTopBtn = document.createElement("button");
+  signOutTopBtn.id = "signOutTopBtn";
+  signOutTopBtn.className = "create-account-btn";
+  signOutTopBtn.textContent = "Sign out";
 
-      $("confirmSignOut").onclick = async () => {
-  showSignOutModal();
+  signOutTopBtn.onclick = () => {
+    showSignOutModal();
+  };
+
+  headerActions.appendChild(signOutTopBtn);
+}
 
   const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
-    console.error("Sign out error:", error);
-    msg("Unable to sign out. Please try again.");
-    return;
-  }
-
-  localStorage.removeItem(ACCOUNT_KEY);
-
-  msg("You have been signed out. You can sign back in anytime.");
-
-  updateHeaderAuth(null);
-};
+    console.error("Sign 
 
       headerActions.appendChild(signOutTopBtn);
     }
