@@ -28,6 +28,63 @@ const monitoringJobs=[{name:"Musa Plumbing",trade:"Plumbing repair",status:"On t
 function renderMonitoring(){mg.innerHTML=monitoringJobs.map((job,index)=>`<article class="monitor-card"><div class="monitor-head"><img class="monitor-avatar" src="${job.img}" alt="${job.name}"><div><h3>${job.name}</h3><p>${job.trade}</p></div><span class="monitor-status">${job.status}</span></div><div class="monitor-route"><span>Professional location</span><strong>${job.distance}</strong></div><div class="monitor-progress" aria-label="${job.progress}% of the journey completed"><span style="width:${job.progress}%"></span></div><div class="monitor-meta"><span>Journey progress <strong>${job.progress}%</strong></span><span><strong>${job.eta}</strong></span></div><button class="secondary monitor-action" type="button" data-monitor-index="${index}">View tracking details</button></article>`).join("")}
 document.addEventListener("error",event=>{const image=event.target;if(image instanceof HTMLImageElement&&image.getAttribute("src")!==fallbackImage){image.src=fallbackImage}},true);
 function showModal(m){m.classList.add("show");document.body.style.overflow="hidden"} function closeModal(m){m.classList.remove("show");if(![proModal,customerModal,jobModal,accountModal,messageModal,professionalModal,paymentModal,premiumModal,assistantModal].some(x=>x.classList.contains("show")))document.body.style.overflow=""} function closeAll(){[proModal,customerModal,jobModal,accountModal,messageModal,professionalModal,paymentModal,premiumModal,assistantModal].forEach(m=>m.classList.remove("show"));document.body.style.overflow=""}
+const signOutModal = document.createElement("div");
+signOutModal.className = "modal";
+signOutModal.innerHTML = `
+  <div class="modal-card small">
+    <button class="close" type="button" aria-label="Close">×</button>
+    <div class="modal-head">
+      <span class="pill">FIXLINK</span>
+      <h2>Sign out of FixLink?</h2>
+      <p>You can always sign back in later using your account.</p>
+    </div>
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button type="button" class="secondary" id="cancelSignOut" style="flex:1;">
+        Cancel
+      </button>
+      <button type="button" class="primary" id="confirmSignOut" style="flex:1;">
+        Sign out
+      </button>
+    </div>
+  </div>
+`;
+
+document.body.appendChild(signOutModal);
+
+function showSignOutModal() {
+  showModal(signOutModal);
+}
+
+function closeSignOutModal() {
+  closeModal(signOutModal);
+}
+
+signOutModal.querySelector(".close").onclick = closeSignOutModal;
+$("cancelSignOut").onclick = closeSignOutModal;
+
+$("confirmSignOut").onclick = async () => {
+  closeSignOutModal();
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    console.error("Sign out error:", error);
+    msg("Unable to sign out. Please try again.");
+    return;
+  }
+
+  localStorage.removeItem(ACCOUNT_KEY);
+
+  msg("You have been signed out. You can sign back in anytime.");
+
+  updateHeaderAuth(null);
+};
+
+signOutModal.addEventListener("click", event => {
+  if (event.target === signOutModal) {
+    closeSignOutModal();
+  }
+});
 function showModal(m){m.classList.add("show");document.body.style.overflow="hidden"} function closeModal(m){m.classList.remove("show");if(![proModal,customerModal,jobModal,accountModal,messageModal,paymentModal,premiumModal,assistantModal].some(x=>x.classList.contains("show")))document.body.style.overflow=""} function closeAll(){[proModal,customerModal,jobModal,accountModal,messageModal,paymentModal,premiumModal,assistantModal].forEach(m=>m.classList.remove("show"));document.body.style.overflow=""}
 function update(){steps.forEach((s,i)=>s.classList.toggle("active",i===current));labels.forEach((l,i)=>l.classList.toggle("active",i===current));bar.style.width=`${((current+1)/steps.length)*100}%`;$("prevStep").style.visibility=current?"visible":"hidden";$("nextStep").textContent=current===steps.length-1?"Create Professional Profile":"Continue"}
 function validate(){for(const f of steps[current].querySelectorAll("input,select,textarea")){if(!f.checkValidity()){f.reportValidity();return false}}return true}
@@ -469,14 +526,9 @@ function updateHeaderAuth(session) {
       signOutTopBtn.className = "create-account-btn";
       signOutTopBtn.textContent = "Sign out";
 
-      signOutTopBtn.onclick = async () => {
-  const confirmed = window.confirm(
-    "Are you sure you want to sign out of FixLink?\n\nYou can always sign back in later using your account."
-  );
-
-  if (!confirmed) {
-    return;
-  }
+      signOutTopBtn.onclick = () => {
+  showSignOutModal();
+};
 
   const { error } = await supabaseClient.auth.signOut();
 
