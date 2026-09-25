@@ -532,15 +532,6 @@ if (!signOutTopBtn) {
 
   headerActions.appendChild(signOutTopBtn);
 }
-
-  const { error } = await supabaseClient.auth.signOut();
-
-  if (error) {
-    console.error("Sign 
-
-      headerActions.appendChild(signOutTopBtn);
-    }
-
     profileTopBtn.hidden = false;
     signOutTopBtn.hidden = false;
 
