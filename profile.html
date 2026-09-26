@@ -286,71 +286,156 @@
 
   async function loadProfile() {
 
-    loading.hidden = false;
-    content.hidden = true;
-    errorBox.hidden = true;
+  loading.hidden = false;
+  content.hidden = true;
+  errorBox.hidden = true;
 
-    try {
+  try {
 
-      const {
-        data: sessionData,
-        error: sessionError
-      } = await supabaseClient.auth.getSession();
+    const {
+      data: sessionData,
+      error: sessionError
+    } = await supabaseClient.auth.getSession();
 
-      if (sessionError) {
-        console.error("Session error:", sessionError);
-        showError("We could not load your session. Please sign in again.");
-        return;
-      }
+    if (sessionError) {
+      console.error("Session error:", sessionError);
+      showError("We could not load your session. Please sign in again.");
+      return;
+    }
 
+    const session = sessionData.session;
 
-      const session = sessionData.session;
+    if (!session || !session.user) {
+      showError(
+        "You are not signed in. Please return to the home page and sign in."
+      );
+      return;
+    }
 
-      if (!session || !session.user) {
-        showError(
-          "You are not signed in. Please return to the home page and sign in."
-        );
-        return;
-      }
+    const userId = session.user.id;
 
+    const {
+      data: profile,
+      error: profileError
+    } = await supabaseClient
+      .from("profiles")
+      .select(`
+        id,
+        full_name,
+        email,
+        phone,
+        role,
+        city,
+        address,
+        avatar_url,
+        created_at,
+        professional_profiles (
+          trade,
+          experience_years,
+          description,
+          specializations,
+          skills,
+          service_radius_km,
+          starting_price,
+          verified,
+          premium_active,
+          premium_expires_at
+        )
+      `)
+      .eq("id", userId)
+      .maybeSingle();
 
-      const userId = session.user.id;
+    if (profileError) {
+      console.error("Profile error:", profileError);
+      showError(
+        "Your account is signed in, but your profile could not be loaded."
+      );
+      return;
+    }
 
+    if (!profile) {
+      showError(
+        "Your account exists, but no FixLink profile was found."
+      );
+      return;
+    }
 
-      const {
-        data: profile,
-        error: profileError
-      } = await supabaseClient
-        .from("profiles")
-        .select(`
-          id,
-          user_id,
-          full_name,
-          email,
-          phone,
-          role,
-          location,
-          created_at
-        `)
-        .eq("user_id", userId)
-        .maybeSingle();
+    document.getElementById("profileAvatar").textContent =
+      getInitial(profile.full_name);
 
+    document.getElementById("profileName").textContent =
+      profile.full_name || "FixLink User";
 
-      if (profileError) {
-        console.error("Profile error:", profileError);
-        showError(
-          "Your account is signed in, but your profile could not be loaded."
-        );
-        return;
-      }
+    document.getElementById("profileFullName").textContent =
+      profile.full_name || "Not provided";
 
+    document.getElementById("profileEmail").textContent =
+      profile.email || session.user.email || "Not provided";
 
-      if (!profile) {
-        showError(
-          "Your account exists, but no FixLink profile was found."
-        );
-        return;
-      }
+    document.getElementById("profilePhone").textContent =
+      profile.phone || "Not provided";
+
+    document.getElementById("profileLocation").textContent =
+      profile.city || profile.address || "Not provided";
+
+    const created = profile.created_at
+      ? new Date(profile.created_at).toLocaleDateString()
+      : "Not available";
+
+    document.getElementById("profileCreated").textContent = created;
+
+    const role = (profile.role || "customer").toLowerCase();
+
+    document.getElementById("accountType").textContent =
+      role === "professional"
+        ? "Professional"
+        : role === "admin"
+          ? "Admin"
+          : "Customer";
+
+    document.getElementById("profileSubtitle").textContent =
+      role === "professional"
+        ? "Your FixLink professional account"
+        : role === "admin"
+          ? "Your FixLink administrator account"
+          : "Your FixLink customer account";
+
+    if (profile.avatar_url) {
+      const avatar = document.getElementById("profileAvatar");
+
+      avatar.innerHTML = "";
+
+      const image = document.createElement("img");
+      image.src = profile.avatar_url;
+      image.alt = profile.full_name || "Profile photo";
+      image.style.width = "100%";
+      image.style.height = "100%";
+      image.style.objectFit = "cover";
+      image.style.borderRadius = "50%";
+
+      avatar.appendChild(image);
+    }
+
+    const professional = Array.isArray(profile.professional_profiles)
+      ? profile.professional_profiles[0]
+      : profile.professional_profiles;
+
+    if (role === "professional" && professional) {
+      console.log("Professional profile loaded:", professional);
+    }
+
+    loading.hidden = true;
+    content.hidden = false;
+
+  } catch (error) {
+
+    console.error("Profile page error:", error);
+
+    showError(
+      "Something went wrong while loading your profile."
+    );
+  }
+}
 
 
       document.getElementById("profileAvatar").textContent =
