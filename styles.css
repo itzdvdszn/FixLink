@@ -1823,3 +1823,98 @@ textarea{
 #fixlink-loader .fixlink-loading-dots span {
   background: #ffffff !important;
 }
+/* =========================================================
+   FIXLINK — ADDITIONS (paste at the very end of styles.css)
+   ========================================================= */
+
+/* Loader title: index.html now uses a <div> instead of a second <h1>,
+   so the old ".fixlink-loader-content h1" rules no longer reach it */
+.fixlink-loader-title{
+  margin:0;
+  font-size:34px;
+  font-weight:800;
+  color:#ffffff;
+  letter-spacing:-.5px;
+}
+
+/* 16 services now: 4 columns on desktop and tablet gives 4 even rows,
+   and 2 columns on phones (already set above) gives 8 even rows */
+@media(min-width:901px){
+  .service-grid{grid-template-columns:repeat(4,1fr)}
+  .service-card{height:180px}
+}
+@media(min-width:601px) and (max-width:900px){
+  .service-grid{grid-template-columns:repeat(4,1fr);gap:12px}
+  .service-card{height:150px}
+  .service-label{font-size:12px}
+}
+
+/* 6 demo professionals: 3 columns on desktop gives 2 even rows
+   (tablet and phone keep 2 columns) */
+@media(min-width:901px){
+  .pro-grid{grid-template-columns:repeat(3,1fr)}
+  .pro-image{height:140px}
+}
+
+/* The assistant launcher is a link, so remove the underline */
+.assistant-button{text-decoration:none}
+
+/* Keyboard focus: your inputs removed the outline, so show a clear one */
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  border-color:var(--blue);
+  box-shadow:0 0 0 3px #0877e833;
+}
+button:focus-visible,
+a:focus-visible,
+.pro-card:focus-visible,
+.service-card:focus-visible{
+  outline:3px solid var(--blue);
+  outline-offset:2px;
+}
+.site-footer a:focus-visible{outline-color:#fff}
+
+/* New request-form note and consent links */
+.fee-note{
+  margin:0;
+  padding:10px 12px;
+  border-radius:9px;
+  background:#eef8ff;
+  color:var(--navy);
+  font-size:12px;
+  font-weight:600;
+  line-height:1.5;
+}
+.checkbox a,
+.form-hint a{
+  color:var(--blue);
+  font-weight:700;
+}
+
+/* Search chips under the hero search bar */
+.quick-chips{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:14px;
+}
+.quick-chips button{
+  border:0;
+  border-radius:99px;
+  padding:8px 14px;
+  background:#ffffff26;
+  color:#fff;
+  font-size:12px;
+  font-weight:600;
+  backdrop-filter:blur(4px);
+  transition:background .2s;
+}
+.quick-chips button:hover{background:#ffffff40}
+
+/* Phones: the 2-column pro cards need slightly smaller action buttons */
+@media(max-width:600px){
+  .pro-actions{grid-template-columns:1fr 1fr}
+  .pro-actions .request-pro{grid-column:1/-1}
+  .fixlink-loader-title{font-size:28px}
+}
