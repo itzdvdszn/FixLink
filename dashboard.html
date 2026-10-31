@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dashboard — FixLink</title>
+<meta name="theme-color" content="#062b5c">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css?v=15">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body{padding-bottom:40px}
+.dash{max-width:900px;margin:24px auto;padding:0 16px}
+.dcard{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px}
+.dcard h2,.dash h2{margin:0 0 4px;font-size:20px}
+.dash h3{margin:26px 0 12px;font-size:17px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.stat{background:#f5f8fb;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
+.stat strong{display:block;font-size:22px;color:var(--navy)}
+.stat span{font-size:11px;color:var(--muted)}
+.badge{display:inline-block;border-radius:20px;padding:5px 10px;font-size:11px;font-weight:700;margin:6px 6px 0 0}
+.badge.ok{background:#e7f8f0;color:#16834b}.badge.wait{background:#fff5d9;color:#a86b00}.badge.prem{background:#fff5d9;color:#a86b00}
+.job-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.job-top h4{margin:0 0 4px;font-size:16px}
+.job-meta{color:var(--muted);font-size:12px;line-height:1.7}
+.job-desc{margin:10px 0;font-size:13px;line-height:1.5}
+.status{white-space:nowrap;font-size:11px;font-weight:800;border-radius:20px;padding:6px 10px;background:#e8f3ff;color:var(--blue)}
+.pay{background:#f5f8fb;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--navy);margin:10px 0}
+.job-actions{display:flex;gap:10px}.job-actions button{flex:1;margin:0}
+.empty{color:var(--muted);font-size:13px;padding:14px;border:1px dashed var(--line);border-radius:12px}
+@media(max-width:600px){.job-top{flex-direction:column}}
+</style>
+</head>
+<body>
+<header class="topbar"><a class="brand-link" href="./" aria-label="FixLink home"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"></div></a><div class="header-actions"><a class="account-btn" href="./" style="text-decoration:none">← Home</a></div></header>
+<main class="dash"><div id="root"><p class="empty">Loading your dashboard…</p></div></main>
+<div class="toast" id="toast"></div>
+<script>
+const db = window.supabase.createClient(
+  "https://liykyosnqcebnnnewomx.supabase.co",
+  "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y"
+);
+const $ = id => document.getElementById(id), root = $("root");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = n => n == null ? "—" : "₦" + Number(n).toLocaleString();
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
+const LABEL = {requested:"New request",accepted:"Accepted · awaiting payment",declined:"Declined",paid:"Paid · ready to start",in_progress:"In progress",completed:"Done · awaiting customer",released:"Paid out",cancelled:"Cancelled",disputed:"Disputed",refunded:"Refunded"};
+const NEW = ["requested"], ACTIVE = ["accepted","paid","in_progress","completed"];
+
+function payoutText(job, premium){
+  if(!(job.budget > 0)) return "";
+  const fee = premium ? 0 : Math.ceil(job.budget * 0.10);
+  return `<div class="pay">Job amount ${money(job.budget)} · FixLink deduction ${premium ? "₦0 (Premium)" : money(fee)} · <strong>You receive ${money(job.budget - fee)}</strong></div>`;
+}
+function jobCard(job, premium){
+  const when = job.scheduled_at ? new Date(job.scheduled_at).toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short"}) : "Date not set";
+  const actions = job.status === "requested"
+    ? `<div class="job-actions"><button class="secondary" data-act="decline" data-id="${esc(job.id)}">Decline</button><button class="primary" data-act="accept" data-id="${esc(job.id)}">Accept</button></div>` : "";
+  return `<article class="dcard"><div class="job-top"><div><h4>${esc(job.service)}</h4><div class="job-meta">Customer: ${esc(job.customer_name)} · ${esc(when)}${job.urgency === "Urgent" ? " · <strong>Urgent</strong>" : ""}<br>⌖ ${esc(job.location)}</div></div><span class="status">${esc(LABEL[job.status] || job.status)}</span></div><p class="job-desc">${esc(job.description)}</p>${payoutText(job, premium)}${actions}</article>`;
+}
+function section(title, jobs, premium, emptyText){
+  return `<h3>${title} (${jobs.length})</h3>` + (jobs.length ? jobs.map(j => jobCard(j, premium)).join("") : `<p class="empty">${emptyText}</p>`);
+}
+
+async function load(){
+  const { data: { session } } = await db.auth.getSession();
+  if(!session){ root.innerHTML = `<div class="dcard"><h2>Sign in required</h2><p class="job-meta">Please sign in as a professional to see your dashboard.</p><a class="primary" href="./" style="display:inline-block;text-decoration:none;margin-top:10px">Go to FixLink</a></div>`; return; }
+  const { data: prof } = await db.from("profiles").select("role").eq("user_id", session.user.id).maybeSingle();
+  if(prof?.role !== "professional"){ root.innerHTML = `<div class="dcard"><h2>This page is for professionals</h2><p class="job-meta">Your account is a customer account. Your requests will appear under My Bookings.</p><a class="primary" href="./" style="display:inline-block;text-decoration:none;margin-top:10px">Back to home</a></div>`; return; }
+
+  const { data: pid } = await db.rpc("my_professional_id");
+  const [{ data: me }, { data: rows, error }] = await Promise.all([
+    db.from("professionals").select("full_name,profession,verified,is_premium,rating").eq("id", pid).maybeSingle(),
+    db.rpc("my_bookings")
+  ]);
+  if(error){ console.error(error); root.innerHTML = `<p class="empty">Could not load your requests. Please refresh.</p>`; return; }
+
+  const jobs = (rows || []).filter(r => r.i_am === "professional");
+  const premium = !!me?.is_premium;
+  const fresh = jobs.filter(j => NEW.includes(j.status)), active = jobs.filter(j => ACTIVE.includes(j.status));
+  const history = jobs.filter(j => !NEW.includes(j.status) && !ACTIVE.includes(j.status));
+
+  root.innerHTML = `<div class="dcard"><h2>${esc(me?.full_name || "Your dashboard")}</h2><div class="job-meta">${esc(me?.profession || "")}</div>
+    ${me?.verified ? '<span class="badge ok">✓ Verified</span>' : '<span class="badge wait">Verification pending</span>'}${premium ? '<span class="badge prem">★ Premium</span>' : ""}
+    <div class="stats"><div class="stat"><strong>${fresh.length}</strong><span>New requests</span></div><div class="stat"><strong>${active.length}</strong><span>Active jobs</span></div><div class="stat"><strong>${history.filter(j => j.status === "released").length}</strong><span>Completed</span></div></div></div>`
+    + section("New requests", fresh, premium, "No new requests right now. They appear here as customers send them.")
+    + section("Active jobs", active, premium, "Accepted jobs appear here until they are finished.")
+    + section("History", history, premium, "Finished, declined and cancelled jobs appear here.");
+}
+
+root.addEventListener("click", async e => {
+  const button = e.target.closest("button[data-act]");
+  if(!button) return;
+  button.disabled = true;
+  const accept = button.dataset.act === "accept";
+  const { error } = await db.rpc("respond_to_booking", { p_booking: button.dataset.id, p_accept: accept });
+  if(error){ toast(error.message); button.disabled = false; return; }
+  toast(accept ? "Request accepted. The customer has been notified." : "Request declined.");
+  load();
+});
+load();
+</script>
+</body>
+</html>
