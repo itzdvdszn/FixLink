@@ -1,1 +1,88 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Bookings - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css"></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">CUSTOMER AREA</span><h1>My bookings</h1><p>Track requests, appointments and completed services in one place.</p></div><section class="page-panel page-empty"><strong>No bookings yet</strong><span>When you request a professional, your booking status will appear here.</span><br><a class="primary" href="search.html">Find a professional</a></section></main><nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item active" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Bookings - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.bk{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
+.bk-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.bk h3{margin:0 0 4px;font-size:16px}
+.bk-meta{color:var(--muted);font-size:12px;line-height:1.7}
+.bk-desc{margin:10px 0;font-size:13px;line-height:1.5}
+.bk-status{white-space:nowrap;font-size:11px;font-weight:800;border-radius:20px;padding:6px 10px;background:#e8f3ff;color:var(--blue)}
+.bk-status.good{background:#e7f8f0;color:#16834b}.bk-status.bad{background:#fdecea;color:#c0392b}
+.bk-note{background:#f5f8fb;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--navy);margin:10px 0}
+.bk-section{margin:24px 0 12px;font-size:17px}
+.bk-update{border-left:3px solid var(--blue);padding:6px 12px;margin-bottom:10px;font-size:13px}
+.bk-update small{display:block;color:var(--muted)}
+.bk-empty{color:var(--muted);font-size:13px;padding:14px;border:1px dashed var(--line);border-radius:12px}
+@media(max-width:600px){.bk-top{flex-direction:column}}
+</style></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">CUSTOMER AREA</span><h1>My bookings</h1><p>Track requests, appointments and completed services in one place.</p></div>
+<div id="bookingsRoot"><section class="page-panel page-empty"><span>Loading your bookings…</span></section></div></main>
+<div class="toast" id="toast"></div>
+<nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item active" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav>
+<script>
+const db = window.supabase.createClient(
+  "https://liykyosnqcebnnnewomx.supabase.co",
+  "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y"
+);
+const root = document.getElementById("bookingsRoot");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = n => n == null ? "—" : "₦" + Number(n).toLocaleString();
+function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
+
+const LABEL = {requested:"Waiting for reply",accepted:"Accepted",declined:"Declined",paid:"Paid",in_progress:"In progress",completed:"Work finished",released:"Completed",cancelled:"Cancelled",disputed:"Disputed",refunded:"Refunded"};
+const NOTE = {
+  requested:"Your request has been sent. You will see a notification here when the professional replies.",
+  accepted:"The professional accepted your request. Online payment will open here soon.",
+  declined:"This professional could not take the job. You can send your request to someone else."
+};
+const GOOD = ["accepted","paid","in_progress","completed","released"], BAD = ["declined","cancelled","disputed","refunded"];
+const CANCELLABLE = ["requested","accepted"];
+
+function card(b){
+  const when = b.scheduled_at ? new Date(b.scheduled_at).toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short"}) : "Date not set";
+  const tone = GOOD.includes(b.status) ? "good" : BAD.includes(b.status) ? "bad" : "";
+  const fee = b.budget > 0 ? Math.ceil(b.budget * 0.30) : 0;
+  const price = b.budget > 0 ? `<div class="bk-note">Job amount ${money(b.budget)} + 30% FixLink usage fee ${money(fee)} = <strong>${money(Number(b.budget) + fee)}</strong> total when you pay</div>` : "";
+  const note = NOTE[b.status] ? `<div class="bk-note">${esc(NOTE[b.status])}</div>` : "";
+  const cancel = CANCELLABLE.includes(b.status) ? `<button class="secondary" data-cancel="${esc(b.id)}" type="button">Cancel request</button>` : "";
+  return `<article class="bk"><div class="bk-top"><div><h3>${esc(b.service)}</h3><div class="bk-meta">With ${esc(b.professional_name || "a professional")} · ${esc(when)}${b.urgency === "Urgent" ? " · <strong>Urgent</strong>" : ""}<br>⌖ ${esc(b.location)}</div></div><span class="bk-status ${tone}">${esc(LABEL[b.status] || b.status)}</span></div><p class="bk-desc">${esc(b.description)}</p>${price}${note}${cancel}</article>`;
+}
+
+async function load(){
+  const { data: { session } } = await db.auth.getSession();
+  if(!session){
+    root.innerHTML = `<section class="page-panel page-empty"><strong>Sign in to see your bookings</strong><span>Your requests and their status appear here once you are signed in.</span><br><a class="primary" href="index.html">Go to FixLink</a></section>`;
+    return;
+  }
+  const { data: me } = await db.from("profiles").select("role").eq("user_id", session.user.id).maybeSingle();
+  if(me?.role === "professional"){
+    root.innerHTML = `<section class="page-panel page-empty"><strong>This page is for customers</strong><span>Jobs sent to you are on your dashboard.</span><br><a class="primary" href="dashboard.html">Open dashboard</a></section>`;
+    return;
+  }
+  const [{ data: rows, error }, { data: notes }] = await Promise.all([
+    db.rpc("my_bookings"),
+    db.from("notifications").select("id,title,message,created_at").order("created_at",{ascending:false}).limit(5)
+  ]);
+  if(error){ console.error(error); root.innerHTML = `<section class="page-panel page-empty"><span>Could not load your bookings. Please refresh.</span></section>`; return; }
+
+  const mine = (rows || []).filter(r => r.i_am === "customer");
+  const updates = (notes || []).length
+    ? `<h2 class="bk-section">Updates</h2>` + notes.map(n => `<div class="bk-update"><strong>${esc(n.title)}</strong> ${esc(n.message)}<small>${new Date(n.created_at).toLocaleString("en-NG",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"})}</small></div>`).join("")
+    : "";
+  root.innerHTML = (mine.length
+    ? `<h2 class="bk-section" style="margin-top:0">Your requests (${mine.length})</h2>` + mine.map(card).join("")
+    : `<section class="page-panel page-empty"><strong>No bookings yet</strong><span>When you request a professional, your booking status will appear here.</span><br><a class="primary" href="search.html">Find a professional</a></section>`) + updates;
+}
+
+root.addEventListener("click", async e => {
+  const button = e.target.closest("[data-cancel]");
+  if(!button) return;
+  if(!confirm("Cancel this request?")) return;
+  button.disabled = true;
+  const { error } = await db.rpc("cancel_booking", { p_booking: button.dataset.cancel });
+  if(error){ toast(error.message); button.disabled = false; return; }
+  toast("Request cancelled.");
+  load();
+});
+load();
+</script>
+</body></html>
