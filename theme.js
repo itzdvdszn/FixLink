@@ -35,4 +35,4 @@
     var onChange = function () { if (!saved()) apply(current()); };
     if (query.addEventListener) query.addEventListener("change", onChange);
   }
-})();
+})(); 
