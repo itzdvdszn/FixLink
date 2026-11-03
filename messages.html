@@ -1,1 +1,109 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Messages - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css"></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">INBOX</span><h1>Messages</h1><p>Keep your conversations with FixLink professionals together.</p></div><section class="page-panel page-empty"><strong>No conversations yet</strong><span>Message a professional from their profile to start a conversation.</span><br><a class="primary" href="search.html">Find a professional</a></section></main><nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item active" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav></body></html>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Messages - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+.convo{display:flex;justify-content:space-between;gap:12px;align-items:center;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;font:inherit;color:inherit}
+.convo:hover,.convo:focus-visible{border-color:var(--blue)}
+.convo strong{display:block;font-size:15px}
+.convo small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.convo .last{color:var(--text);font-size:13px;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:56vw}
+.convo-side{text-align:right;flex-shrink:0;color:var(--muted);font-size:11px}
+.unread{display:inline-block;min-width:20px;padding:3px 7px;border-radius:20px;background:var(--blue);color:#fff;font-size:11px;font-weight:800;margin-top:6px;text-align:center}
+.chat-top{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.chat-top h2{margin:0;font-size:18px}.chat-top small{color:var(--muted);font-size:12px}
+.chat-wrap .chat-log{height:min(52vh,420px);margin:0 0 12px}
+.chat-note{color:var(--muted);font-size:11px;margin:0 0 12px}
+.msg-empty{color:var(--muted);font-size:13px;text-align:center;margin:auto}
+</style></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">INBOX</span><h1>Messages</h1><p>Keep your conversations with FixLink professionals together.</p></div>
+<div id="root"><section class="page-panel page-empty"><span>Loading your messages…</span></section></div></main>
+<div class="toast" id="toast"></div>
+<nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item active" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav>
+<script>
+const db = window.supabase.createClient(
+  "https://liykyosnqcebnnnewomx.supabase.co",
+  "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y"
+);
+const $ = id => document.getElementById(id), root = $("root");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function toast(t){const el=$("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
+const fmt = d => new Date(d).toLocaleString("en-NG",{day:"numeric",month:"short",hour:"numeric",minute:"2-digit"});
+let openId = null, timer = null, lastKey = "";
+
+function stopPolling(){ clearInterval(timer); timer = null; openId = null; lastKey = ""; }
+
+async function showList(){
+  stopPolling();
+  history.replaceState(null, "", "messages.html");
+  const { data, error } = await db.rpc("my_conversations");
+  if(error){ console.error(error); root.innerHTML = `<section class="page-panel page-empty"><span>Could not load your messages. Please refresh.</span></section>`; return; }
+  if(!data.length){
+    root.innerHTML = `<section class="page-panel page-empty"><strong>No conversations yet</strong><span>Once you send or receive a request, you can chat about the job here.</span><br><a class="primary" href="search.html">Find a professional</a></section>`;
+    return;
+  }
+  root.innerHTML = data.map(c => `<button class="convo" type="button" data-id="${esc(c.booking_id)}" data-name="${esc(c.other_name || "")}" data-service="${esc(c.service)}"><div><strong>${esc(c.other_name || "FixLink user")}</strong><small>${esc(c.service)}</small><div class="last">${c.last_message ? esc(c.last_message) : "No messages yet. Say hello."}</div></div><div class="convo-side">${c.last_message ? esc(fmt(c.last_at)) : ""}${c.unread > 0 ? `<br><span class="unread">${esc(c.unread)}</span>` : ""}</div></button>`).join("");
+}
+
+function openChat(id, name, service){
+  stopPolling();
+  openId = id;
+  history.replaceState(null, "", "messages.html?booking=" + encodeURIComponent(id));
+  root.innerHTML = `<div class="chat-wrap"><div class="chat-top"><button class="secondary" id="backBtn" type="button">←</button><div><h2>${esc(name || "Conversation")}</h2><small>${esc(service || "")}</small></div></div><p class="chat-note">Keep your chat and payments inside FixLink. Never share bank details or passwords.</p><div class="chat-log" id="log" aria-live="polite"></div><form class="message-form" id="sendForm"><input id="msgInput" maxlength="1000" autocomplete="off" placeholder="Type a message..." aria-label="Message" required><button class="primary" type="submit" aria-label="Send message">➤</button></form></div>`;
+  $("backBtn").onclick = showList;
+  $("sendForm").addEventListener("submit", send);
+  refreshThread(true);
+  timer = setInterval(() => { if(!document.hidden) refreshThread(false); }, 5000);
+}
+
+async function refreshThread(forceScroll){
+  if(!openId) return;
+  const id = openId;
+  const { data, error } = await db.rpc("booking_messages", { p_booking: id });
+  if(id !== openId) return;
+  const log = $("log");
+  if(error){ log.innerHTML = `<p class="msg-empty">${esc(error.message)}</p>`; return; }
+  const key = data.length + ":" + (data.length ? data[data.length - 1].id : "");
+  if(key === lastKey && !forceScroll) return;
+  lastKey = key;
+  const nearBottom = log.scrollHeight - log.scrollTop - log.clientHeight < 80;
+  log.innerHTML = data.length
+    ? data.map(m => `<div class="chat-bubble ${m.mine ? "sent" : "received"}">${esc(m.message)}<small>${esc(fmt(m.created_at))}</small></div>`).join("")
+    : `<p class="msg-empty">No messages yet. Say hello.</p>`;
+  if(forceScroll || nearBottom) log.scrollTop = log.scrollHeight;
+}
+
+async function send(e){
+  e.preventDefault();
+  const input = $("msgInput"), text = input.value.trim();
+  if(!text || !openId) return;
+  const button = e.currentTarget.querySelector("button");
+  button.disabled = true;
+  const { error } = await db.rpc("send_message", { p_booking: openId, p_message: text });
+  button.disabled = false;
+  if(error){ toast(error.message); return; }
+  input.value = "";
+  input.focus();
+  refreshThread(true);
+}
+
+root.addEventListener("click", e => {
+  const item = e.target.closest(".convo");
+  if(item) openChat(item.dataset.id, item.dataset.name, item.dataset.service);
+});
+
+async function start(){
+  const { data: { session } } = await db.auth.getSession();
+  if(!session){
+    root.innerHTML = `<section class="page-panel page-empty"><strong>Sign in to see your messages</strong><span>Your conversations appear here once you are signed in.</span><br><a class="primary" href="index.html">Go to FixLink</a></section>`;
+    return;
+  }
+  const wanted = new URLSearchParams(location.search).get("booking");
+  if(wanted){
+    const { data } = await db.rpc("my_conversations");
+    const c = (data || []).find(x => x.booking_id === wanted);
+    if(c){ openChat(c.booking_id, c.other_name, c.service); return; }
+  }
+  showList();
+}
+document.addEventListener("visibilitychange", () => { if(!document.hidden && openId) refreshThread(false); });
+start();
+</script>
+</body></html>
