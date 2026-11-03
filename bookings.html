@@ -43,7 +43,7 @@ function card(b){
   const fee = b.budget > 0 ? Math.ceil(b.budget * 0.30) : 0;
   const price = b.budget > 0 ? `<div class="bk-note">Job amount ${money(b.budget)} + 30% FixLink usage fee ${money(fee)} = <strong>${money(Number(b.budget) + fee)}</strong> total when you pay</div>` : "";
   const note = NOTE[b.status] ? `<div class="bk-note">${esc(NOTE[b.status])}</div>` : "";
-  const cancel = CANCELLABLE.includes(b.status) ? `<button class="secondary" data-cancel="${esc(b.id)}" type="button">Cancel request</button>` : "";
+  const cancel = (CANCELLABLE.includes(b.status) ? `<button class="secondary" data-cancel="${esc(b.id)}" type="button">Cancel request</button> ` : "") + (!["declined","cancelled"].includes(b.status) ? `<a class="primary" href="messages.html?booking=${esc(b.id)}" style="display:inline-block;text-decoration:none">Message</a>` : "");
   return `<article class="bk"><div class="bk-top"><div><h3>${esc(b.service)}</h3><div class="bk-meta">With ${esc(b.professional_name || "a professional")} · ${esc(when)}${b.urgency === "Urgent" ? " · <strong>Urgent</strong>" : ""}<br>⌖ ${esc(b.location)}</div></div><span class="bk-status ${tone}">${esc(LABEL[b.status] || b.status)}</span></div><p class="bk-desc">${esc(b.description)}</p>${price}${note}${cancel}</article>`;
 }
 
