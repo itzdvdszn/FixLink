@@ -1918,3 +1918,73 @@ a:focus-visible,
   .pro-actions .request-pro{grid-column:1/-1}
   .fixlink-loader-title{font-size:28px}
 }
+/* ===== Respect the [hidden] attribute (fixes the Sign in button staying visible) ===== */
+[hidden]{display:none!important}
+
+/* ===== Theme toggle button ===== */
+.theme-toggle{position:fixed;left:16px;bottom:92px;z-index:19;width:44px;height:44px;padding:0;border-radius:50%;border:1px solid var(--line);background:#fff;color:#062b5c;font-size:20px;line-height:1;display:grid;place-items:center;box-shadow:0 6px 18px #062b5c33;cursor:pointer}
+
+/* ===== Dark mode ===== */
+html[data-theme="dark"]{color-scheme:dark;--navy:#e6edf7;--text:#e6edf7;--muted:#9fb0c6;--line:#27364d}
+html[data-theme="dark"] body{background:#0b1220}
+html[data-theme="dark"] .topbar{border-bottom-color:var(--line)}
+html[data-theme="dark"] .fixlink-logo{background:#fff;border-radius:12px;padding:4px}
+html[data-theme="dark"] .tagline{color:#9fb0c6}
+
+/* hero search */
+html[data-theme="dark"] .searchbar{background:#16233a}
+html[data-theme="dark"] .searchbar button{background:#16233a;border-left-color:var(--line)}
+
+/* cards and strips */
+html[data-theme="dark"] .trust-strip{background:#10243f}
+html[data-theme="dark"] .trust-strip div{border-right-color:var(--line)}
+html[data-theme="dark"] .pro-card{background:#121c2e;box-shadow:none}
+html[data-theme="dark"] .tag{background:#12304f;color:#7cc0ff}
+html[data-theme="dark"] .monitor-card{background:#0f1a2d}
+html[data-theme="dark"] .monitor-progress{background:#1b2a41}
+html[data-theme="dark"] .monitor-avatar,html[data-theme="dark"] .professional-details-head img{background:#1b2a41}
+
+/* bottom navigation */
+html[data-theme="dark"] .bottom-nav,html[data-theme="dark"] .nav-item{background:#0f1a2d}
+html[data-theme="dark"] .bottom-nav{border-top-color:var(--line);box-shadow:none}
+html[data-theme="dark"] .nav-item{color:#9fb0c6}
+html[data-theme="dark"] .nav-item.active{color:#4da3ff}
+
+/* windows and forms */
+html[data-theme="dark"] .modal-card,html[data-theme="dark"] .settings-drawer-panel{background:#121c2e}
+html[data-theme="dark"] .close,html[data-theme="dark"] .settings-drawer-close{background:#1b2a41;color:#e6edf7}
+html[data-theme="dark"] .pill{background:#12304f;color:#7cc0ff}
+html[data-theme="dark"] .progress{background:#1b2a41}
+html[data-theme="dark"] .steps span{background:#1b2a41;color:#9fb0c6}
+html[data-theme="dark"] .steps span.active{background:#12304f;color:#7cc0ff}
+html[data-theme="dark"] label{color:#c4d2e5}
+html[data-theme="dark"] input,html[data-theme="dark"] select,html[data-theme="dark"] textarea{background:#0b1220;border-color:#2c3d57;color:#e6edf7}
+html[data-theme="dark"] .secondary{background:#1b2a41;color:#e6edf7}
+html[data-theme="dark"] .auth-tab{background:#0b1220;border-color:#2c3d57}
+html[data-theme="dark"] .auth-tab.active{background:#12304f;color:#7cc0ff;border-color:#1f4a78}
+html[data-theme="dark"] .form-actions{border-top-color:var(--line)}
+html[data-theme="dark"] .fee-note{background:#12304f;color:#cfe6ff}
+
+/* chat, payment, details, assistant */
+html[data-theme="dark"] .chat-log,html[data-theme="dark"] .assistant-log,html[data-theme="dark"] .payment-summary,html[data-theme="dark"] .professional-summary{background:#0b1220}
+html[data-theme="dark"] .chat-bubble.received,html[data-theme="dark"] .assistant-bubble.received{background:#1b2a41;border-color:#2c3d57;color:#e6edf7}
+html[data-theme="dark"] .payment-total{border-top-color:var(--line)}
+html[data-theme="dark"] .assistant-suggestions button{background:#12304f;border-color:#1f4a78;color:#7cc0ff}
+html[data-theme="dark"] .assistant-button,html[data-theme="dark"] .assistant-avatar{background:#1b3a66;color:#fff}
+html[data-theme="dark"] .premium-link{background:#3a2c0a;color:#f1c453}
+html[data-theme="dark"] .premium-settings-row{background:#2a2110;border-color:#5a4713}
+html[data-theme="dark"] .premium-settings-row strong{color:#f1d88e}
+html[data-theme="dark"] .premium-settings-row span{color:#c9a44c}
+
+/* footer, toast, theme button */
+html[data-theme="dark"] .site-footer{background:#060d1a}
+html[data-theme="dark"] .toast{background:#27364d;color:#fff}
+html[data-theme="dark"] .theme-toggle{background:#1b2a41;color:#f1c453;border-color:#2c3d57;box-shadow:0 6px 18px #0008}
+
+/* Dashboard, My Bookings and Messages pages */
+html[data-theme="dark"] .dcard,html[data-theme="dark"] .bk,html[data-theme="dark"] .convo,html[data-theme="dark"] .page-panel{background:#121c2e;border-color:var(--line)}
+html[data-theme="dark"] .stat,html[data-theme="dark"] .pay,html[data-theme="dark"] .bk-note{background:#0f1a2d;color:#cfe0f5}
+html[data-theme="dark"] .status,html[data-theme="dark"] .bk-status{background:#12304f;color:#7cc0ff}
+html[data-theme="dark"] .bk-status.good,html[data-theme="dark"] .badge.ok{background:#0f3a2a;color:#5fd6a0}
+html[data-theme="dark"] .bk-status.bad{background:#3d1a17;color:#ff8a7a}
+html[data-theme="dark"] .badge.wait,html[data-theme="dark"] .badge.prem{background:#3a2c0a;color:#f1c453}
