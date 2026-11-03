@@ -128,11 +128,14 @@ $("jobForm").addEventListener("submit", async e => {
 }, true);
 
 // "Dashboard" button for professionals
+let dashboardSyncId = 0;
 async function syncDashboardButton(session) {
+  const myRun = ++dashboardSyncId;
   const actions = document.querySelector(".header-actions");
-  let button = $("dashboardTopBtn");
-  if (!session || !actions) { button?.remove(); return; }
+  if (!session || !actions) { $("dashboardTopBtn")?.remove(); return; }
   const { data } = await supabaseClient.from("profiles").select("role").eq("user_id", session.user.id).maybeSingle();
+  if (myRun !== dashboardSyncId) return; // a newer check is already running
+  let button = $("dashboardTopBtn");
   if (data?.role !== "professional") { button?.remove(); return; }
   if (!button) {
     button = document.createElement("button");
