@@ -106,9 +106,29 @@
 
 <div class="modal" id="premiumModal" role="dialog" aria-modal="true" aria-label="Premium Visibility"><div class="modal-card small premium-card"><button class="close" id="closePremium">×</button><div class="modal-head"><span class="pill premium-pill">OPTIONAL UPGRADE</span><h2>Premium Visibility</h2><p>Get seen sooner by customers who are already searching for your trade.</p></div><div class="premium-price"><strong>₦1,200</strong><span>/ month, optional</span></div><ul class="premium-benefits"><li><strong>Show up first:</strong> appear above standard profiles in your service category</li><li><strong>Win more attention:</strong> put your profile in front of more nearby customers</li><li><strong>Build trust faster:</strong> display a Premium badge beside your verified profile</li><li><strong>Turn visibility into work:</strong> make it easier for customers to find and request you</li><li><strong>Stay in control:</strong> standard profiles remain free and you can cancel anytime</li></ul><button class="primary wide" id="subscribePremium" type="button">Choose optional Premium</button><p class="payment-note">No payment is required to create a standard professional profile. Monthly billing requires server-side subscription confirmation.</p></div></div>
 
-<div class="settings-drawer" id="settingsDrawer" aria-hidden="true"><div class="settings-drawer-panel"><button class="settings-drawer-close" id="closeSettings" type="button" aria-label="Close settings">×</button><div class="modal-head"><span class="pill">PREFERENCES</span><h2>Settings</h2><p>Manage how FixLink works on this device.</p></div><div class="settings-list"><a class="settings-row settings-profile" href="profile.html"><div><strong>Profile</strong><span>Manage your customer or professional account.</span></div></a><label class="settings-row"><div><strong>Location services</strong><span>Use your area to show nearby professionals.</span></div><input type="checkbox" checked></label><label class="settings-row"><div><strong>Booking updates</strong><span>Receive updates about requests and appointments.</span></div><input type="checkbox" checked></label><label class="settings-row"><div><strong>Message notifications</strong><span>Be notified when a professional replies.</span></div><input type="checkbox" checked></label></div></div></div>
-
-<nav class="bottom-nav"><a class="nav-item active" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a></nav>
+<div class="settings-drawer" id="settingsDrawer" aria-hidden="true"><div class="settings-drawer-panel">
+<button class="settings-drawer-close" id="closeSettings" type="button" aria-label="Close settings">×</button>
+<div class="set-head"><h2>Settings</h2><p>Manage your account and preferences.</p></div>
+<p class="set-title">Account</p>
+<div class="set-group settings-list">
+<a class="set-row" href="profile.html"><i>👤</i><div><strong>Profile</strong><span>Your details and account type</span></div><b>›</b></a>
+</div>
+<p class="set-title">Preferences</p>
+<div class="set-group">
+<label class="set-row"><i>📍</i><div><strong>Location services</strong><span>Show professionals near you</span></div><input class="toggle" type="checkbox" data-pref="location" checked></label>
+<label class="set-row"><i>📅</i><div><strong>Booking updates</strong><span>Requests and appointments</span></div><input class="toggle" type="checkbox" data-pref="bookings" checked></label>
+<label class="set-row"><i>💬</i><div><strong>Message notifications</strong><span>When a professional replies</span></div><input class="toggle" type="checkbox" data-pref="messages" checked></label>
+</div>
+<p class="set-title">Support</p>
+<div class="set-group">
+<a class="set-row" href="info.html#help"><i>❓</i><div><strong>Help Center</strong></div><b>›</b></a>
+<a class="set-row" href="info.html#contact"><i>✉️</i><div><strong>Contact us</strong></div><b>›</b></a>
+<a class="set-row" href="info.html#privacy"><i>🔒</i><div><strong>Privacy Policy</strong></div><b>›</b></a>
+<a class="set-row" href="info.html#terms"><i>📄</i><div><strong>Terms of Service</strong></div><b>›</b></a>
+</div>
+<button class="set-signout" id="settingsSignOut" type="button">Sign out</button>
+<p class="set-version">FixLink · Version 1.0</p>
+</div></div>
 <div class="toast" id="toast"></div>
 <script src="script.js?v=20"></script><script src="live.js?v=1"></script><script src="https://js.paystack.co/v1/inline.js"></script>
 <script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
@@ -119,5 +139,7 @@ document.querySelectorAll("[data-open]").forEach(a=>a.addEventListener("click",e
  if(k==="pro-signup"){document.getElementById("createAccountBtn").click();setTimeout(()=>document.getElementById("professionalSignup").click(),60)}
  if(k==="pro-signin"){document.getElementById("accountBtn").click();setTimeout(()=>document.querySelector('.auth-tab[data-role="professional"]').click(),60)}}));
 document.querySelectorAll(".close:not([aria-label])").forEach(b=>b.setAttribute("aria-label","Close"));
+  document.querySelectorAll("[data-pref]").forEach(i=>{const k="fixlink_pref_"+i.dataset.pref,v=localStorage.getItem(k);if(v!==null)i.checked=v==="1";i.addEventListener("change",()=>localStorage.setItem(k,i.checked?"1":"0"))});
+document.getElementById("settingsSignOut").onclick=()=>{document.getElementById("closeSettings").click();const o=document.getElementById("signOutTopBtn");(o&&!o.hidden?o:document.getElementById("accountBtn")).click()};
 </script>
 </body></html>
