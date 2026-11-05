@@ -2034,3 +2034,27 @@ html[data-theme="dark"] .how-grid div{background:#121c2e}
   .how-grid{gap:10px}
   .how-grid div{padding:12px}
 }
+/* ===== Settings panel ===== */
+.settings-drawer-panel{background:#f5f8fb;padding:26px 20px}
+.set-head h2{margin:0 0 4px;font-size:24px}
+.set-head p{margin:0;color:var(--muted);font-size:13px}
+.set-title{margin:22px 4px 8px;font-size:11px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+.set-group{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.set-row{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line);color:var(--text);text-decoration:none;font-weight:400}
+.set-group>.set-row:last-child{border-bottom:0}
+.set-row i{width:34px;height:34px;border-radius:10px;background:#eef3f8;display:grid;place-items:center;font-style:normal;font-size:16px;flex:none}
+.set-row div{flex:1;min-width:0}
+.set-row strong{display:block;font-size:14px;font-weight:600}
+.set-row span{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.set-row b{color:var(--muted);font-size:20px;font-weight:400}
+.set-row .toggle{appearance:none;-webkit-appearance:none;width:44px;height:26px;padding:0;border:0;border-radius:99px;background:#cbd5e1;position:relative;flex:none;cursor:pointer;transition:background .2s}
+.set-row .toggle:before{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #0003;transition:transform .2s}
+.set-row .toggle:checked{background:var(--blue)}
+.set-row .toggle:checked:before{transform:translateX(18px)}
+.set-group .premium-settings-row{border:0;border-top:1px solid var(--line);border-radius:0;gap:12px;padding:13px 14px}
+.set-signout{width:100%;margin-top:22px;padding:13px;border:1px solid #f3c6c1;border-radius:12px;background:#fff;color:#c0392b;font-weight:700}
+.set-version{text-align:center;color:var(--muted);font-size:11px;margin:14px 0 0}
+.header-settings{background:#eef3f8!important;border:1px solid var(--line)!important;box-shadow:none!important;font-size:20px!important;width:40px!important;height:40px!important;flex-basis:40px!important}
+html[data-theme="dark"] .set-group,html[data-theme="dark"] .set-signout{background:#0f1a2d}
+html[data-theme="dark"] .set-row i,html[data-theme="dark"] .header-settings{background:#1b2a41!important}
+html[data-theme="dark"] .set-signout{border-color:#5a2a26}
