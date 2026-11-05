@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en"><head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="theme.js?v=1"></script>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FixLink Assistant</title>
@@ -31,7 +32,7 @@ body{padding:0;height:100dvh;display:flex;flex-direction:column;background:#f5f8
 html[data-theme="dark"] body{background:#0b1220}
 html[data-theme="dark"] .b.bot,html[data-theme="dark"] #chips button,html[data-theme="dark"] #f{background:#121c2e}
 </style></head><body>
-<div class="ah"><a href="index.html" aria-label="Back">‹</a><div class="av">✦</div><div><strong>FixLink Assistant</strong><small>● Online · replies instantly</small></div></div>
+<div class="ah"><a href="index.html" aria-label="Back">‹</a><div class="av">✦</div><div><strong>FixLink Assistant</strong><small>● Online · replies instantly</small></div><button id="new" type="button" style="margin-left:auto;border:1px solid #ffffff55;background:none;color:#fff;border-radius:99px;padding:6px 12px;font-size:12px">New chat</button></div>
 <div id="log" aria-live="polite"></div>
 <div id="chips"></div>
 <form id="f"><input id="q" autocomplete="off" placeholder="Describe your problem..." aria-label="Message"><button type="submit" aria-label="Send">➤</button></form>
@@ -72,10 +73,16 @@ const I=[
 [/become a pro|join as|work with you|sign up as|register as a|i am a (plumber|electrician|carpenter|painter)/,"Great! You can create a free pro profile in about two minutes.<a class=\"cta\" href=\"index.html?pro=1\">Create a pro profile</a>",[]]
 ];
 let ctx={trade:null,awaiting:false};
-function add(h,k){const d=document.createElement("div");d.className="b "+k;d.innerHTML=h;log.append(d);log.scrollTop=log.scrollHeight;return d}
-function setChips(a){chips.innerHTML=a.map(x=>`<button type="button">${x}</button>`).join("")}
-function say(h,c=[],x=""){chips.innerHTML="";const tp=add('<div class="typing"><i></i><i></i><i></i></div>',"bot");setTimeout(()=>{tp.remove();add(h+x,"bot");setChips(c)},600+Math.min(h.length*8,900))}
-function done(urgent){const tr=ctx.trade;ctx.awaiting=false;say((urgent?"Got it, I’ll treat this as urgent. Set <b>Urgency</b> to Urgent on the form so pros see it first.":"No problem. A little flexibility often means better prices.")+" Here’s your next step:",[],`<a class="cta" href="index.html?service=${encodeURIComponent(tr)}">Request: ${esc(tr)}</a><a class="cta alt" href="index.html#services">Browse all services</a>`)}
+const KEY="fixlink_assistant_v1",sb=window.supabase.createClient("https://liykyosnqcebnnnewomx.supabase.co","sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y");
+let hist=[],chipList=[];
+function save(){try{localStorage.setItem(KEY,JSON.stringify({t:Date.now(),hist:hist.slice(-40),ctx,chips:chipList}))}catch{}}
+function add(h,k,store=true){const d=document.createElement("div");d.className="b "+k;d.innerHTML=h;log.append(d);log.scrollTop=log.scrollHeight;if(store){hist.push([k,h]);save()}return d}
+function setChips(a){chipList=a;chips.innerHTML=a.map(x=>`<button type="button">${x}</button>`).join("");save()}
+function say(h,c=[],x=""){chips.innerHTML="";const tp=add('<div class="typing"><i></i><i></i><i></i></div>',"bot",false);setTimeout(()=>{tp.remove();add(h+x,"bot");setChips(c)},600+Math.min(h.length*8,900))}
+async function lookup(trade){try{const {data,error}=await sb.from("professionals").select("*").limit(100);if(error)throw error;return(data||[]).filter(p=>(p.trade||p.main_trade||"")===trade).slice(0,3)}catch(e){console.warn("Pro lookup:",e);return null}}
+async function done(urgent){const tr=ctx.trade;ctx.awaiting=false;const pros=await lookup(tr);let list="";
+if(pros&&pros.length)list="<br><br>Pros on FixLink for this:<br>"+pros.map(p=>"• <b>"+esc(p.full_name||p.name||"FixLink professional")+"</b>"+(p.starting_price?" · from ₦"+Number(p.starting_price).toLocaleString():"")+((p.location||p.city)?" · "+esc(p.location||p.city):"")).join("<br>");
+say((urgent?"Got it, I’ll treat this as urgent. Set <b>Urgency</b> to Urgent on the form so pros see it first.":"No problem. A little flexibility often means better prices.")+list+"<br><br>Here’s your next step:",[],`<a class="cta" href="index.html?service=${encodeURIComponent(tr)}">Request: ${esc(tr)}</a><a class="cta alt" href="index.html#services">Browse all services</a>`)}
 function handle(raw){
  const t=raw.toLowerCase().trim();
  if(ctx.awaiting&&/\b(now|right away|urgent|asap|today|tonight|week|soon|later|flexible|no rush)\b/.test(t))return done(/\b(now|right away|urgent|asap)\b/.test(t));
@@ -87,5 +94,9 @@ function handle(raw){
 function send(t){add(esc(t),"me");handle(t)}
 $("f").onsubmit=e=>{e.preventDefault();const v=$("q").value.trim();if(v){$("q").value="";send(v)}};
 chips.onclick=e=>{const b=e.target.closest("button");if(b)send(b.textContent)};
-say("Hi, I’m your FixLink Assistant. 👋 Tell me what you need fixed and I’ll match you with the right pro.",["Leaking pipe","Lights not working","How does FixLink work?","How much does it cost?"]);
+$("new").onclick=()=>{localStorage.removeItem(KEY);location.reload()};
+(function(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY))}catch{}
+if(s&&s.hist&&s.hist.length&&Date.now()-s.t<864e5){ctx=s.ctx||ctx;s.hist.forEach(([k,h])=>add(h,k));
+say(ctx.awaiting?`Welcome back! 👋 We were on a <b>${esc(ctx.trade)}</b> job. How urgent is it?`:"Welcome back! 👋 Anything else I can help you fix?",ctx.awaiting?["Right now","Today","This week"]:["Leaking pipe","Lights not working","How much does it cost?"])}
+else say("Hi, I’m your FixLink Assistant. 👋 Tell me what you need fixed and I’ll match you with the right pro.",["Leaking pipe","Lights not working","How does FixLink work?","How much does it cost?"])})();
 </script></body></html>
