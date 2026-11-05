@@ -1,24 +1,91 @@
 <!doctype html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <script src="theme.js?v=1"></script>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FixLink Assistant</title>
 <meta name="theme-color" content="#062b5c">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=16">
 <style>
-.assistant-page{min-height:100vh;background:linear-gradient(145deg,#eef6ff 0%,#fff 52%,#fff7df 100%);padding-bottom:40px}.assistant-page .topbar{background:#ffffffd9;justify-content:flex-start;gap:8px;position:relative}.assistant-back{position:absolute;left:calc(4% - 20px);top:50%;transform:translateY(-50%);color:var(--navy);font-size:24px;font-weight:700;line-height:1;text-decoration:none}.assistant-main{width:min(760px,92%);margin:54px auto 0}.assistant-panel{background:#fff;border:1px solid #dce8f3;border-radius:20px;box-shadow:0 18px 50px #062b5c18;padding:30px}.assistant-page .assistant-header{padding-right:0}.assistant-page .assistant-header h1{font-size:30px;margin:10px 0 5px}.assistant-page .assistant-log{height:330px}.assistant-page .assistant-form{display:flex;gap:10px}.assistant-page .assistant-form input{flex:1}.assistant-page .assistant-form .primary{min-width:52px;padding:12px}.assistant-page .assistant-result{margin-top:16px}.assistant-page .assistant-suggestions button:disabled,.assistant-page .assistant-form button:disabled{cursor:wait;opacity:.55}@media(max-width:600px){.assistant-main{margin-top:28px}.assistant-panel{padding:20px}.assistant-page .assistant-header h1{font-size:25px}.assistant-page .assistant-log{height:300px}.assistant-back{left:calc(4% - 12px)}}
-</style>
-</head>
-<body class="assistant-page">
-<header class="topbar"><a class="brand-link" href="index.html" aria-label="Back to FixLink home"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="assistant-back" href="index.html" aria-label="Back to home">←</a></header>
-<main class="assistant-main"><section class="assistant-panel" aria-labelledby="assistantTitle"><div class="assistant-header"><div class="assistant-avatar">✦</div><div><span class="pill">FIXLINK ASSISTANT</span><h1 id="assistantTitle">Let’s find the right hands</h1><p>I’ll understand the problem and point you to the right kind of professional.</p></div></div><div class="assistant-log" id="assistantLog" aria-live="polite"><div class="assistant-bubble received">Hi, I’m your FixLink Assistant. What do you need help with today?</div></div><div class="assistant-suggestions" id="assistantSuggestions"><button type="button" data-prompt="I have a leaking pipe">Leaking pipe</button><button type="button" data-prompt="My lights are not working">Electrical problem</button><button type="button" data-prompt="I need help painting my home">Painting job</button><button type="button" data-prompt="I need someone to clean my home">Home cleaning</button></div><form class="message-form assistant-form" id="assistantForm"><input id="assistantInput" required autocomplete="off" placeholder="Describe your problem..." aria-label="Describe your problem"><button class="primary" type="submit" aria-label="Ask FixLink Assistant">➤</button></form><div class="assistant-result" id="assistantResult" hidden><strong id="assistantRecommendation"></strong><button class="primary wide" id="findProfessionals" type="button">View matching professionals</button></div></section></main>
-<script src="assistant.js"></script>
-<script>if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));}</script>
-</body>
-</html>
+body{padding:0;height:100dvh;display:flex;flex-direction:column;background:#f5f8fb}
+.theme-toggle{display:none}
+.ah{display:flex;align-items:center;gap:12px;padding:12px 16px;background:#062b5c;color:#fff}
+.ah a{color:#fff;text-decoration:none;font-size:26px;line-height:1}
+.av{width:40px;height:40px;border-radius:50%;background:#ffffff22;color:#f5a900;display:grid;place-items:center;font-size:20px}
+.ah strong{display:block}.ah small{opacity:.8;font-size:12px}
+#log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+.b{max-width:84%;padding:11px 14px;border-radius:16px;font-size:14px;line-height:1.5}
+.b.bot{align-self:flex-start;background:#fff;border:1px solid var(--line);border-bottom-left-radius:4px}
+.b.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:4px}
+.typing{display:flex;gap:4px;padding:4px 2px}
+.typing i{width:7px;height:7px;border-radius:50%;background:#8da1b6;animation:tp 1s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,100%{opacity:.35;transform:translateY(0)}50%{opacity:1;transform:translateY(-4px)}}
+#chips{display:flex;gap:8px;overflow-x:auto;padding:0 16px 10px}
+#chips button{flex:none;border:1px solid #cfe1f5;background:#fff;color:var(--blue);border-radius:99px;padding:8px 14px;font-size:13px;font-weight:600}
+#f{display:flex;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--line);background:#fff}
+#f input{flex:1;border-radius:99px;padding:12px 16px}
+#f button{width:46px;height:46px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:18px}
+.cta{display:block;margin-top:10px;padding:11px;border-radius:10px;background:var(--blue);color:#fff;text-align:center;font-weight:700;text-decoration:none}
+.cta.alt{background:#eef3f8;color:#062b5c}
+html[data-theme="dark"] body{background:#0b1220}
+html[data-theme="dark"] .b.bot,html[data-theme="dark"] #chips button,html[data-theme="dark"] #f{background:#121c2e}
+</style></head><body>
+<div class="ah"><a href="index.html" aria-label="Back">‹</a><div class="av">✦</div><div><strong>FixLink Assistant</strong><small>● Online · replies instantly</small></div></div>
+<div id="log" aria-live="polite"></div>
+<div id="chips"></div>
+<form id="f"><input id="q" autocomplete="off" placeholder="Describe your problem..." aria-label="Message"><button type="submit" aria-label="Send">➤</button></form>
+<script>
+const $=id=>document.getElementById(id),log=$("log"),chips=$("chips");
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const T=[
+["Generator Repair",["generator","gen set","inverter","petrol engine"],"Check the fuel and oil level if it is safe to do so."],
+["Phone Repair",["phone","iphone","android","cracked screen","charging port"],"Back up your data before the repair if you can."],
+["Plumbers",["leak","leaking","pipe","tap","toilet","water","drain","plumbing","plumber","sink","flush","blocked"],"If water is flooding, close the main valve first."],
+["Electricians",["light","lights","socket","wire","wiring","electric","electrician","switch","outlet","fuse","spark","sparks","breaker","tripping"],"Switch off the affected breaker and avoid touching exposed wires."],
+["AC Technicians",["ac","air conditioner","cooling","not cold"],"Turn the unit off if it is leaking water or making loud noises."],
+["Painters",["paint","painting","repaint","wall colour","wall color"],"Measure the rooms to be painted. It helps pros quote faster."],
+["Carpenters",["wood","door","cabinet","shelf","wardrobe","carpenter"],"Take a photo of the item and note its measurements."],
+["Furniture Makers",["furniture","sofa","table","chair","bed frame"],"Share a reference photo of the style you want."],
+["Cleaners",["clean","cleaning","cleaner","dirty","laundry"],"Mention the size of the space and how often you need it."],
+["Mechanics",["car","vehicle","engine","brake","tyre","tire","mechanic","gearbox"],"Note any warning lights or noises, and the car model."],
+["Tilers",["tile","tiles","tiling","tiler"],"Measure the floor area in square metres."],
+["Builders / Masons",["build","building","builder","brick","cement","mason","crack","plaster"],"Share photos of the area and the size of the job."],
+["Bricklayers",["bricklayer","bricklaying","block work","fence"],"Share the length and height of the wall."],
+["Welders",["weld","welding","welder","metal","iron","gate"],"Share the dimensions and a photo or sketch."],
+["Glass Installers",["glass","window","mirror"],"Measure the opening and note if the old glass is broken."],
+["Landscapers",["garden","lawn","landscape","landscaping","tree","grass"],"Share the size of the area and what you want done."]
+];
+const hit=(t,k)=>new RegExp("\\b"+k+(k.length<=4?"\\b":"")).test(t);
+const find=t=>{let best=null,n=0;for(const [name,kw,tip] of T){const s=kw.filter(k=>hit(t,k)).length;if(s>n){n=s;best=[name,tip]}}return best};
+const I=[
+[/\b(gas smell|smell gas|fire|smoke|electrocut|shocked)\b/,"⚠️ If anyone is in danger, move to safety and call <b>112</b> (emergency line) first. Once it’s safe, tell me what happened and I’ll find the right pro.",[]],
+[/^(hi|hello|hey|yo|howdy|sup|good (morning|afternoon|evening))( there| fixlink)?[!. ]*$/,()=>pick(["Hi there! 👋 What can I help you fix today?","Hello! Tell me what’s broken or what you need done, and I’ll point you to the right pro."]),["Leaking pipe","Lights not working","How does FixLink work?"]],
+[/how are you|how far|how’s it going|how's it going/,"I’m doing great, thanks for asking! What do you need help with today?",["Leaking pipe","Need a cleaner"]],
+[/\b(thanks|thank you|thx|appreciate)\b/,"You’re welcome! Anything else I can help with?",[]],
+[/^(bye|goodbye|see you|later)\b/,"Take care! Come back anytime you need a fix. 👋",[]],
+[/^help$|what can you do|who are you|what are you/,"I’m FixLink’s assistant. I can work out which professional fits your problem, explain fees and safety, and take you straight to the request form.",["Leaking pipe","How much does it cost?","Are pros verified?"]],
+[/how (does|do).*work|how it works/,"It’s simple:<br>1. Describe the job and your budget<br>2. Chat with nearby pros<br>3. Pay securely through Paystack<br>4. Track your pro and leave a review",["Leaking pipe","How much does it cost?"]],
+[/fee|price|pricing|cost|how much|charge|commission|paystack|refund/,"The pro’s price is the budget you set. FixLink adds a 30% usage fee on top, and you see the full total before you pay. Payments are handled securely by Paystack.",["How does FixLink work?","Are pros verified?"]],
+[/verif|trust|safe|scam|legit/,"Pros are reviewed before they get the ✓ Verified badge, and new pros show as <b>New</b> until then. Ratings come from completed jobs.",["How much does it cost?"]],
+[/become a pro|join as|work with you|sign up as|register as a|i am a (plumber|electrician|carpenter|painter)/,"Great! You can create a free pro profile in about two minutes.<a class=\"cta\" href=\"index.html?pro=1\">Create a pro profile</a>",[]]
+];
+let ctx={trade:null,awaiting:false};
+function add(h,k){const d=document.createElement("div");d.className="b "+k;d.innerHTML=h;log.append(d);log.scrollTop=log.scrollHeight;return d}
+function setChips(a){chips.innerHTML=a.map(x=>`<button type="button">${x}</button>`).join("")}
+function say(h,c=[],x=""){chips.innerHTML="";const tp=add('<div class="typing"><i></i><i></i><i></i></div>',"bot");setTimeout(()=>{tp.remove();add(h+x,"bot");setChips(c)},600+Math.min(h.length*8,900))}
+function done(urgent){const tr=ctx.trade;ctx.awaiting=false;say((urgent?"Got it, I’ll treat this as urgent. Set <b>Urgency</b> to Urgent on the form so pros see it first.":"No problem. A little flexibility often means better prices.")+" Here’s your next step:",[],`<a class="cta" href="index.html?service=${encodeURIComponent(tr)}">Request: ${esc(tr)}</a><a class="cta alt" href="index.html#services">Browse all services</a>`)}
+function handle(raw){
+ const t=raw.toLowerCase().trim();
+ if(ctx.awaiting&&/\b(now|right away|urgent|asap|today|tonight|week|soon|later|flexible|no rush)\b/.test(t))return done(/\b(now|right away|urgent|asap)\b/.test(t));
+ for(const [re,r,c] of I)if(re.test(t))return say(typeof r==="function"?r():r,c);
+ const m=find(t);
+ if(m){ctx.trade=m[0];ctx.awaiting=true;return say(`That sounds like a job for <b>${m[0]}</b>. ${m[1]}<br><br>How urgent is it?`,["Right now","Today","This week"])}
+ say("I’m not sure I caught that. Tell me what’s broken or what you need done. For example: “my socket is sparking” or “I need my living room painted”.",["Leaking pipe","Generator not starting","Need a cleaner","AC not cooling"]);
+}
+function send(t){add(esc(t),"me");handle(t)}
+$("f").onsubmit=e=>{e.preventDefault();const v=$("q").value.trim();if(v){$("q").value="";send(v)}};
+chips.onclick=e=>{const b=e.target.closest("button");if(b)send(b.textContent)};
+say("Hi, I’m your FixLink Assistant. 👋 Tell me what you need fixed and I’ll match you with the right pro.",["Leaking pipe","Lights not working","How does FixLink work?","How much does it cost?"]);
+</script></body></html>
