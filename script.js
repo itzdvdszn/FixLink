@@ -580,3 +580,7 @@ supabaseClient.auth.getSession().then(({ data, error }) => {
 supabaseClient.auth.onAuthStateChange((event, session) => {
   updateHeaderAuth(session);
 });
+// Open a form when arriving from the assistant (?service=Plumbers or ?pro=1)
+(()=>{const p=new URLSearchParams(location.search),s=p.get("service");
+if(s&&services.some(x=>x[0]===s)){history.replaceState(null,"",location.pathname);setTimeout(()=>openJob(s),1300)}
+else if(p.get("pro")){history.replaceState(null,"",location.pathname);setTimeout(openPro,1300)}})();
