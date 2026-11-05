@@ -110,7 +110,7 @@ $("nextStep").onclick = async () => {
     stepData.get("password") !== stepData.get("confirmPassword")
   ) {
     msg("Passwords do not match.");
-    $("proForm [name=confirmPassword]").focus();
+    document.querySelector("#proForm [name=confirmPassword]").focus();
     return;
   }
 
@@ -250,7 +250,7 @@ $("customerForm").addEventListener("submit", async e => {
 
   if (d.get("password") !== d.get("confirmPassword")) {
     msg("Passwords do not match.");
-    $("customerForm [name=confirmPassword]").focus();
+    document.querySelector("#customerForm [name=confirmPassword]").focus();
     return;
   }
 
