@@ -57,7 +57,6 @@ function jobCard(job, premium){
   const chat = !["declined","cancelled"].includes(job.status) ? `<a class="secondary" href="messages.html?booking=${esc(job.id)}" style="display:inline-block;text-decoration:none;text-align:center;padding:12px 22px;border-radius:9px;font-weight:700;margin-top:6px">Message customer</a>` : "";
   const actions = (job.status === "requested"
     ? `<div class="job-actions"><button class="secondary" data-act="decline" data-id="${esc(job.id)}">Decline</button><button class="primary" data-act="accept" data-id="${esc(job.id)}">Accept</button></div>` : "") + chat;
-    ? `<div class="job-actions"><button class="secondary" data-act="decline" data-id="${esc(job.id)}">Decline</button><button class="primary" data-act="accept" data-id="${esc(job.id)}">Accept</button></div>` : "";
   return `<article class="dcard"><div class="job-top"><div><h4>${esc(job.service)}</h4><div class="job-meta">Customer: ${esc(job.customer_name)} · ${esc(when)}${job.urgency === "Urgent" ? " · <strong>Urgent</strong>" : ""}<br>⌖ ${esc(job.location)}</div></div><span class="status">${esc(LABEL[job.status] || job.status)}</span></div><p class="job-desc">${esc(job.description)}</p>${payoutText(job, premium)}${actions}</article>`;
 }
 function section(title, jobs, premium, emptyText){
