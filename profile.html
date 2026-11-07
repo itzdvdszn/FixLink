@@ -255,22 +255,13 @@
 
 
 <script>
-  const SUPABASE_URL =
-    "https://liykyosnqcebnnnewomx.supabase.co";
-
-  const SUPABASE_KEY =
-    "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y";
-
   const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
+    "https://liykyosnqcebnnnewomx.supabase.co",
+    "sb_publishable_PJMLKaDQbAt4pxg3Bkp8dQ_8H5mYA7Y"
   );
 
-
-  const loading = document.getElementById("profileLoading");
-  const content = document.getElementById("profileContent");
-  const errorBox = document.getElementById("profileError");
-
+  const $ = id => document.getElementById(id);
+  const loading = $("profileLoading"), content = $("profileContent"), errorBox = $("profileError");
 
   function showError(message) {
     loading.hidden = true;
@@ -279,236 +270,82 @@
     errorBox.hidden = false;
   }
 
-
-  function getInitial(name) {
-    return (name || "F").trim().charAt(0).toUpperCase();
-  }
-
-
   async function loadProfile() {
+    try {
+      const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+      if (sessionError) { console.error(sessionError); showError("We could not load your session. Please sign in again."); return; }
 
-  loading.hidden = false;
-  content.hidden = true;
-  errorBox.hidden = true;
+      const session = sessionData.session;
+      if (!session) { showError("You are not signed in. Please return to the home page and sign in."); return; }
 
-  try {
+      const { data: profile, error: profileError } = await supabaseClient
+        .from("profiles")
+        .select("id, full_name, email, phone, role, location, created_at")
+        .eq("user_id", session.user.id)
+        .maybeSingle();
 
-    const {
-      data: sessionData,
-      error: sessionError
-    } = await supabaseClient.auth.getSession();
-
-    if (sessionError) {
-      console.error("Session error:", sessionError);
-      showError("We could not load your session. Please sign in again.");
-      return;
-    }
-
-    const session = sessionData.session;
-
-    if (!session || !session.user) {
-      showError(
-        "You are not signed in. Please return to the home page and sign in."
-      );
-      return;
-    }
-
-    const userId = session.user.id;
-
-    const {
-      data: profile,
-      error: profileError
-    } = await supabaseClient
-      .from("profiles")
-      .select(`
-        id,
-        full_name,
-        email,
-        phone,
-        role,
-        city,
-        address,
-        avatar_url,
-        created_at,
-        professional_profiles (
-          trade,
-          experience_years,
-          description,
-          specializations,
-          skills,
-          service_radius_km,
-          starting_price,
-          verified,
-          premium_active,
-          premium_expires_at
-        )
-      `)
-      .eq("id", userId)
-      .maybeSingle();
-
-    if (profileError) {
-      console.error("Profile error:", profileError);
-      showError(
-        "Your account is signed in, but your profile could not be loaded."
-      );
-      return;
-    }
-
-    if (!profile) {
-      showError(
-        "Your account exists, but no FixLink profile was found."
-      );
-      return;
-    }
-
-    document.getElementById("profileAvatar").textContent =
-      getInitial(profile.full_name);
-
-    document.getElementById("profileName").textContent =
-      profile.full_name || "FixLink User";
-
-    document.getElementById("profileFullName").textContent =
-      profile.full_name || "Not provided";
-
-    document.getElementById("profileEmail").textContent =
-      profile.email || session.user.email || "Not provided";
-
-    document.getElementById("profilePhone").textContent =
-      profile.phone || "Not provided";
-
-    document.getElementById("profileLocation").textContent =
-      profile.city || profile.address || "Not provided";
-
-    const created = profile.created_at
-      ? new Date(profile.created_at).toLocaleDateString()
-      : "Not available";
-
-    document.getElementById("profileCreated").textContent = created;
-
-    const role = (profile.role || "customer").toLowerCase();
-
-    document.getElementById("accountType").textContent =
-      role === "professional"
-        ? "Professional"
-        : role === "admin"
-          ? "Admin"
-          : "Customer";
-
-    document.getElementById("profileSubtitle").textContent =
-      role === "professional"
-        ? "Your FixLink professional account"
-        : role === "admin"
-          ? "Your FixLink administrator account"
-          : "Your FixLink customer account";
-
-    if (profile.avatar_url) {
-      const avatar = document.getElementById("profileAvatar");
-
-      avatar.innerHTML = "";
-
-      const image = document.createElement("img");
-      image.src = profile.avatar_url;
-      image.alt = profile.full_name || "Profile photo";
-      image.style.width = "100%";
-      image.style.height = "100%";
-      image.style.objectFit = "cover";
-      image.style.borderRadius = "50%";
-
-      avatar.appendChild(image);
-    }
-
-    const professional = Array.isArray(profile.professional_profiles)
-      ? profile.professional_profiles[0]
-      : profile.professional_profiles;
-
-    if (role === "professional" && professional) {
-      console.log("Professional profile loaded:", professional);
-    }
-
-    loading.hidden = true;
-    content.hidden = false;
-
-  } catch (error) {
-
-    console.error("Profile page error:", error);
-
-    showError(
-      "Something went wrong while loading your profile."
-    );
-  }
-}
-
-
-      document.getElementById("profileAvatar").textContent =
-        getInitial(profile.full_name);
-
-      document.getElementById("profileName").textContent =
-        profile.full_name || "FixLink User";
-
-      document.getElementById("profileFullName").textContent =
-        profile.full_name || "Not provided";
-
-      document.getElementById("profileEmail").textContent =
-        profile.email || session.user.email || "Not provided";
-
-      document.getElementById("profilePhone").textContent =
-        profile.phone || "Not provided";
-
-      document.getElementById("profileLocation").textContent =
-        profile.location || "Not provided";
-
-
-      const created = profile.created_at
-        ? new Date(profile.created_at).toLocaleDateString()
-        : "Not available";
-
-      document.getElementById("profileCreated").textContent = created;
-
+      if (profileError) { console.error(profileError); showError("Your account is signed in, but your profile could not be loaded."); return; }
+      if (!profile) { showError("Your account exists, but no FixLink profile was found."); return; }
 
       const role = (profile.role || "customer").toLowerCase();
+      const name = profile.full_name || "FixLink User";
 
-      document.getElementById("accountType").textContent =
-        role === "professional"
-          ? "Professional"
-          : "Customer";
+      $("profileAvatar").textContent = name.trim().charAt(0).toUpperCase();
+      $("profileName").textContent = name;
+      $("profileFullName").textContent = profile.full_name || "Not provided";
+      $("profileEmail").textContent = profile.email || session.user.email || "Not provided";
+      $("profilePhone").textContent = profile.phone || "Not provided";
+      $("profileLocation").textContent = profile.location || "Not provided";
+      $("profileCreated").textContent = profile.created_at
+        ? new Date(profile.created_at).toLocaleDateString()
+        : "Not available";
+      $("accountType").textContent = role === "professional" ? "Professional" : role === "admin" ? "Admin" : "Customer";
+      $("profileSubtitle").textContent = role === "professional"
+        ? "Your FixLink professional account"
+        : role === "admin" ? "Your FixLink administrator account" : "Your FixLink customer account";
 
-      document.getElementById("profileSubtitle").textContent =
-        role === "professional"
-          ? "Your FixLink professional account"
-          : "Your FixLink customer account";
+      // Professionals: show their work details too
+      if (role === "professional") {
+        const { data: pro, error: proError } = await supabaseClient
+          .from("professionals")
+          .select("profession, years_experience, starting_price, verified, is_premium, rating")
+          .eq("profile_id", profile.id)
+          .maybeSingle();
 
+        if (proError) console.warn("Professional details:", proError);
+        if (pro) {
+          const rows = [
+            ["Trade", pro.profession],
+            ["Experience", pro.years_experience != null ? pro.years_experience + " years" : null],
+            ["Starting price", pro.starting_price != null ? "₦" + Number(pro.starting_price).toLocaleString() : null],
+            ["Status", (pro.verified ? "✓ Verified" : "New — awaiting ID check") + (pro.is_premium ? " · ★ Premium" : "")]
+          ];
+          $("profileSubtitle").textContent = (pro.profession || "Professional") + " · FixLink professional account";
+          const box = document.querySelector(".profile-details");
+          rows.filter(r => r[1]).forEach(([label, value]) => {
+            const d = document.createElement("div");
+            d.className = "profile-detail";
+            const s = document.createElement("small"); s.textContent = label;
+            const b = document.createElement("strong"); b.textContent = value;
+            d.append(s, b);
+            box.append(d);
+          });
+        }
+      }
 
       loading.hidden = true;
       content.hidden = false;
-
     } catch (error) {
-
       console.error("Profile page error:", error);
-
-      showError(
-        "Something went wrong while loading your profile."
-      );
+      showError("Something went wrong while loading your profile.");
     }
   }
 
-
-  document
-    .getElementById("signOutBtn")
-    .addEventListener("click", async () => {
-
-      const {
-        error
-      } = await supabaseClient.auth.signOut();
-
-      if (error) {
-        console.error("Sign out error:", error);
-        showError("Unable to sign out. Please try again.");
-        return;
-      }
-
-      window.location.href = "index.html?v=17";
-    });
-
+  $("signOutBtn").addEventListener("click", async () => {
+    const { error } = await supabaseClient.auth.signOut();
+    if (error) { console.error(error); showError("Unable to sign out. Please try again."); return; }
+    window.location.href = "index.html";
+  });
 
   loadProfile();
 </script>
