@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-<script src="theme.js?v=1"></script> 
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>My Bookings - FixLink</title><link rel="manifest" href="manifest.webmanifest"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="pages.css">
+<script src="theme.js?v=1"></script> 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 .bk{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:12px}
@@ -20,8 +20,8 @@
 @media(max-width:600px){.bk-top{flex-direction:column}}
 </style></head><body class="standalone-page"><header class="topbar"><a class="brand-link" href="index.html"><div class="brand"><img src="assets/fixlink-logo.png" alt="FixLink" class="fixlink-logo"><div class="brand-copy"><span class="brand-text">Fix<span class="brand-accent">Link</span></span><span class="tagline">The right hands, right when you need them</span></div></div></a><a class="page-back" href="index.html">Back to home</a></header><main class="page-main"><div class="page-heading"><span class="pill">CUSTOMER AREA</span><h1>My bookings</h1><p>Track requests, appointments and completed services in one place.</p></div>
 <div id="bookingsRoot"><section class="page-panel page-empty"><span>Loading your bookings…</span></section></div></main>
-<div class="toast" id="toast"></div>
-<nav class="bottom-nav"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item active" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<nav class="bottom-nav" aria-label="Main"><a class="nav-item" href="index.html"><span>⌂</span>Home</a><a class="nav-item" href="search.html"><span>⌕</span>Search</a><a class="nav-item active" aria-current="page" href="bookings.html"><span>▣</span>My Bookings</a><a class="nav-item" href="messages.html"><span>▢</span>Messages</a><a class="nav-item" href="profile.html"><span>○</span>Profile</a></nav>
 <script>
 const db = window.supabase.createClient(
   "https://liykyosnqcebnnnewomx.supabase.co",
@@ -29,29 +29,33 @@ const db = window.supabase.createClient(
 );
 const root = document.getElementById("bookingsRoot");
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = n => n == null ? "—" : "₦" + Number(n).toLocaleString();
+const money = n => n == null ? "—" : "₦" + Number(n).toLocaleString("en-NG")
 function toast(t){const el=document.getElementById("toast");el.textContent=t;el.classList.add("show");clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2800)}
 
 const LABEL = {requested:"Waiting for reply",accepted:"Accepted",declined:"Declined",paid:"Paid",in_progress:"In progress",completed:"Work finished",released:"Completed",cancelled:"Cancelled",disputed:"Disputed",refunded:"Refunded"};
 const NOTE = {
   requested:"Your request has been sent. You will see a notification here when the professional replies.",
   accepted:"The professional accepted your request. Online payment will open here soon.",
-  declined:"This professional could not take the job. You can send your request to someone else."
+  declined:"This professional could not take the job. You can send your request to someone else.",
+  paid:"Payment received. The professional will start the job.",
+  in_progress:"Your professional is working on the job.",
+  completed:"The professional says the job is done. Please check the work."
 };
 const GOOD = ["accepted","paid","in_progress","completed","released"], BAD = ["declined","cancelled","disputed","refunded"];
 const CANCELLABLE = ["requested","accepted"];
+const CUSTOMER_FEE_RATE = 0.15;
 
 function card(b){
   const when = b.scheduled_at ? new Date(b.scheduled_at).toLocaleDateString("en-NG",{weekday:"short",day:"numeric",month:"short"}) : "Date not set";
   const tone = GOOD.includes(b.status) ? "good" : BAD.includes(b.status) ? "bad" : "";
-  const fee = b.budget > 0 ? Math.ceil(b.budget * 0.30) : 0;
-  const price = b.budget > 0 ? `<div class="bk-note">Job amount ${money(b.budget)} + 30% FixLink usage fee ${money(fee)} = <strong>${money(Number(b.budget) + fee)}</strong> total when you pay</div>` : "";
+  const fee = b.budget > 0 ? Math.ceil(b.budget * CUSTOMER_FEE_RATE) : 0;
+  const price = (b.budget > 0 && !["declined","cancelled","refunded"].includes(b.status)) ? `<div class="bk-note">Job amount ${money(b.budget)} + ${Math.round(CUSTOMER_FEE_RATE*100)}% FixLink usage fee ${money(fee)} = <strong>${money(Number(b.budget) + fee)}</strong> total when you pay</div>` : "";
   const note = NOTE[b.status] ? `<div class="bk-note">${esc(NOTE[b.status])}</div>` : "";
-  const cancel = (CANCELLABLE.includes(b.status) ? `<button class="secondary" data-cancel="${esc(b.id)}" type="button">Cancel request</button> ` : "") + (!["declined","cancelled"].includes(b.status) ? `<a class="primary" href="messages.html?booking=${esc(b.id)}" style="display:inline-block;text-decoration:none">Message</a>` : "");
+  const cancel = (CANCELLABLE.includes(b.status) ? `<button class="secondary" data-cancel="${esc(b.id)}" type="button">Cancel request</button> ` : "") + (!["declined","cancelled"].includes(b.status) ? `<a class="primary" href="messages.html?booking=${encodeURIComponent(b.id)}" style="display:inline-block;text-decoration:none">Message</a>` : "");
   return `<article class="bk"><div class="bk-top"><div><h3>${esc(b.service)}</h3><div class="bk-meta">With ${esc(b.professional_name || "a professional")} · ${esc(when)}${b.urgency === "Urgent" ? " · <strong>Urgent</strong>" : ""}<br>⌖ ${esc(b.location)}</div></div><span class="bk-status ${tone}">${esc(LABEL[b.status] || b.status)}</span></div><p class="bk-desc">${esc(b.description)}</p>${price}${note}${cancel}</article>`;
 }
 
-async function load(){
+async function loadInner(){
   const { data: { session } } = await db.auth.getSession();
   if(!session){
     root.innerHTML = `<section class="page-panel page-empty"><strong>Sign in to see your bookings</strong><span>Your requests and their status appear here once you are signed in.</span><br><a class="primary" href="index.html">Go to FixLink</a></section>`;
@@ -76,14 +80,17 @@ async function load(){
     ? `<h2 class="bk-section" style="margin-top:0">Your requests (${mine.length})</h2>` + mine.map(card).join("")
     : `<section class="page-panel page-empty"><strong>No bookings yet</strong><span>When you request a professional, your booking status will appear here.</span><br><a class="primary" href="search.html">Find a professional</a></section>`) + updates;
 }
-
+async function load(){
+  try { await loadInner(); }
+  catch(err){ console.error(err); root.innerHTML = `<section class="page-panel page-empty"><span>Could not load your bookings. Please check your connection and refresh.</span></section>`; }
+}
 root.addEventListener("click", async e => {
   const button = e.target.closest("[data-cancel]");
   if(!button) return;
   if(!confirm("Cancel this request?")) return;
   button.disabled = true;
   const { error } = await db.rpc("cancel_booking", { p_booking: button.dataset.cancel });
-  if(error){ toast(error.message); button.disabled = false; return; }
+  if(error){ console.error(error); toast("This request can't be cancelled any more. Please refresh."); button.disabled = false; return; }
   toast("Request cancelled.");
   load();
 });
